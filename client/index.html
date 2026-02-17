@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valrenta City - Home Price Experiment</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Error overlay for missing UID -->
+  <div id="error-overlay" style="display:none;">
+    <div class="error-box">
+      <h2>⚠️ Access Denied</h2>
+      <p>Missing valid participant ID. Please access this game through the correct experiment link.</p>
+      <p class="error-hint">The URL should contain a <code>uid</code> parameter, e.g.: <code>?uid=P12345</code></p>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div id="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>Loading Valrenta City...</p>
+    </div>
+  </div>
+
+  <!-- Phaser game container -->
+  <div id="game-container"></div>
+
+  <!-- DOM overlay for forms (character creation, survey, etc.) -->
+  <div id="ui-overlay"></div>
+
+  <!-- Phaser 3 via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+  <!-- Game modules -->
+  <script src="js/api.js"></script>
+  <script src="js/scenes/BootScene.js"></script>
+  <script src="js/scenes/CharacterCreateScene.js"></script>
+  <script src="js/scenes/JobSelectScene.js"></script>
+  <script src="js/scenes/CityScene.js"></script>
+  <script src="js/scenes/WorkScene.js"></script>
+  <script src="js/scenes/MonthEndScene.js"></script>
+  <script src="js/scenes/HousePriceScene.js"></script>
+  <script src="js/scenes/LotteryScene.js"></script>
+  <script src="js/scenes/SurveyScene.js"></script>
+  <script src="js/scenes/EndScene.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
