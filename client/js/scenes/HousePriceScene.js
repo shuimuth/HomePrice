@@ -1,7 +1,7 @@
 /**
  * HousePriceScene - Display city house prices
- * Implements both a scrolling street animation (Plan A) and
- * a city map popup (Plan B) for house price exposure.
+ * Shows a city skyline background with area price cards in a
+ * grid layout for clear, at-a-glance house price information.
  */
 class HousePriceScene extends Phaser.Scene {
   constructor() {
@@ -17,8 +17,9 @@ class HousePriceScene extends Phaser.Scene {
     // Generate area prices with small variation
     this.areaPrices = this.generateAreaPrices(basePrice, variation);
 
-    // Draw the street animation (Plan A)
-    this.drawStreetAnimation(width, height);
+    // Draw the city skyline + price cards view
+    this.drawCitySkyline(width, height);
+    this.drawPriceCards(width, height);
   }
 
   generateAreaPrices(basePrice, variation) {
@@ -40,274 +41,291 @@ class HousePriceScene extends Phaser.Scene {
     });
   }
 
-  drawStreetAnimation(width, height) {
-    // Background: evening street scene
+  drawCitySkyline(width, height) {
     const bg = this.add.graphics();
-    bg.fillGradientStyle(0x1a1a2e, 0x1a1a2e, 0x2c3e50, 0x2c3e50);
+
+    // Night sky gradient
+    bg.fillGradientStyle(0x0b0c2a, 0x0b0c2a, 0x1a1a3e, 0x1a1a3e);
     bg.fillRect(0, 0, width, height);
 
-    // Road at bottom
-    this.add.rectangle(width / 2, height - 40, width, 80, 0x34495e);
-    for (let x = 0; x < width; x += 60) {
-      this.add.rectangle(x + 15, height - 40, 30, 3, 0xf1c40f);
+    // Stars
+    for (let i = 0; i < 60; i++) {
+      const sx = Math.random() * width;
+      const sy = Math.random() * height * 0.35;
+      const sr = 0.5 + Math.random() * 1.2;
+      const alpha = 0.3 + Math.random() * 0.7;
+      bg.fillStyle(0xffffff, alpha);
+      bg.fillCircle(sx, sy, sr);
     }
 
-    // Title
-    this.add.text(width / 2, 25, '🏙️ Valrenta City Housing Market', {
-      fontSize: '20px',
+    // Twinkling stars animation
+    const twinkleStars = [];
+    for (let i = 0; i < 12; i++) {
+      const star = this.add.circle(
+        Math.random() * width,
+        Math.random() * height * 0.3,
+        1 + Math.random(),
+        0xffffff,
+        0.8
+      );
+      twinkleStars.push(star);
+    }
+    this.tweens.add({
+      targets: twinkleStars,
+      alpha: { from: 0.3, to: 1 },
+      duration: 800 + Math.random() * 1200,
+      yoyo: true,
+      repeat: -1,
+      delay: this.tweens.stagger(200),
+    });
+
+    // Moon
+    bg.fillStyle(0xf5f5dc, 0.9);
+    bg.fillCircle(width - 80, 50, 22);
+    bg.fillStyle(0x0b0c2a, 0.9);
+    bg.fillCircle(width - 72, 44, 18);
+
+    // Ground / road at very bottom
+    bg.fillStyle(0x2c3e50, 1);
+    bg.fillRect(0, height - 22, width, 22);
+    for (let x = 0; x < width; x += 50) {
+      bg.fillStyle(0xf1c40f, 0.5);
+      bg.fillRect(x + 5, height - 12, 25, 2);
+    }
+  }
+
+  drawPriceCards(width, height) {
+    // ===== TOP SECTION: Title + Summary =====
+    const titleText = this.add.text(width / 2, 18, '🏙️ Valrenta City Housing Market', {
+      fontSize: '18px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#3498db',
       fontStyle: 'bold',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setAlpha(0);
 
-    this.add.text(width / 2, 50, `Month ${GameState.currentMonth} — Walking home through the city...`, {
-      fontSize: '13px',
+    const subtitleText = this.add.text(width / 2, 40, `Month ${GameState.currentMonth} — City Real Estate Overview`, {
+      fontSize: '12px',
       color: '#95a5a6',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setAlpha(0);
 
-    // Create scrolling buildings with price tags
-    const buildingColors = [0x2980b9, 0x8e44ad, 0x27ae60, 0xc0392b, 0x16a085, 0xd35400, 0x2c3e50, 0x9b59b6];
-    const roofTypes = ['flat', 'pointed', 'stepped', 'dome', 'antenna', 'slant', 'crown', 'flat'];
-    const startX = width + 50;
-    const buildingGroup = [];
+    // Average price summary
+    const avgPrice = this.areaPrices.reduce((s, a) => s + a.price, 0) / this.areaPrices.length;
+    const salary = GameState.config.monthlyBaseSalary;
+    const yearsToSave = (avgPrice / salary / 12).toFixed(1);
+
+    const summaryBg = this.add.graphics();
+    summaryBg.fillStyle(0x0a1a35, 0.9);
+    summaryBg.fillRoundedRect(60, 56, width - 120, 70, 10);
+    summaryBg.lineStyle(1, 0x3498db, 0.3);
+    summaryBg.strokeRoundedRect(60, 56, width - 120, 70, 10);
+
+    const avgLabel = this.add.text(width / 2, 70, 'City Average House Price', {
+      fontSize: '11px', color: '#95a5a6',
+    }).setOrigin(0.5).setAlpha(0);
+
+    const avgPriceText = this.add.text(width / 2, 90, `$${Math.round(avgPrice).toLocaleString()}`, {
+      fontSize: '22px', fontFamily: 'Segoe UI, sans-serif',
+      color: '#f39c12', fontStyle: 'bold',
+    }).setOrigin(0.5).setAlpha(0);
+
+    const infoText = this.add.text(width / 2, 112, `≈ ${yearsToSave} years of salary   |   Your Balance: $${GameState.balance.toLocaleString()}`, {
+      fontSize: '10px', color: '#7f8c8d',
+    }).setOrigin(0.5).setAlpha(0);
+
+    // Fade in top section
+    const topElements = [titleText, subtitleText, summaryBg, avgLabel, avgPriceText, infoText];
+    this.tweens.add({
+      targets: topElements,
+      alpha: 1,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    // ===== BOTTOM SECTION: Buildings with prices =====
+    const groundY = height - 22; // top of road
+    const buildingAreaTop = 145;  // where building labels can start
+    const maxBuildingH = groundY - buildingAreaTop - 50; // max building pixel height (reserve space for labels)
+    const minBuildingH = 60;
+
+    const prices = this.areaPrices.map(a => a.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    // Building layout: 8 buildings evenly spaced
+    const numBuildings = this.areaPrices.length;
+    const totalGap = 12; // gap between buildings
+    const buildingW = Math.floor((width - 40 - (numBuildings - 1) * totalGap) / numBuildings);
+    const startX = (width - (numBuildings * buildingW + (numBuildings - 1) * totalGap)) / 2;
+
+    // Building colors (darker variations)
+    const buildingColors = [
+      0x1a3a5c, 0x1e3d5e, 0x153050, 0x1c3856,
+      0x17335a, 0x1b3654, 0x14304e, 0x193858
+    ];
+
+    // Accent/roof colors based on price
+    const getAccentColor = (ratio) => {
+      if (ratio > 0.7) return { color: 0xe74c3c, hex: '#e74c3c' };
+      if (ratio > 0.4) return { color: 0xf39c12, hex: '#f39c12' };
+      return { color: 0x2ecc71, hex: '#2ecc71' };
+    };
+
+    const icons = ['🏢', '🏬', '🏘️', '🌳', '🚉', '🌆', '🌊', '🏛️'];
 
     this.areaPrices.forEach((area, i) => {
-      const x = startX + i * 220;
-      const h = 120 + Math.random() * 150;
-      const w = 100 + Math.random() * 60;
-      const baseY = height - 80;
-      const topY = baseY - h;
-      const leftX = x - w / 2;
-      const rightX = x + w / 2;
-      const color = buildingColors[i % buildingColors.length];
-      const darkColor = Phaser.Display.Color.ValueToColor(color).darken(25).color;
-      const lightColor = Phaser.Display.Color.ValueToColor(color).lighten(15).color;
-      const roofType = roofTypes[i % roofTypes.length];
+      const ratio = maxPrice > minPrice ? (area.price - minPrice) / (maxPrice - minPrice) : 0.5;
+      const bH = minBuildingH + ratio * (maxBuildingH - minBuildingH);
+      const bx = startX + i * (buildingW + totalGap);
+      const by = groundY - bH;
+      const centerX = bx + buildingW / 2;
+      const accent = getAccentColor(ratio);
 
-      const g = this.add.graphics();
+      // Building body (will animate from ground up)
+      const bldgGraphics = this.add.graphics();
+      bldgGraphics.fillStyle(buildingColors[i % buildingColors.length], 1);
+      bldgGraphics.fillRect(bx, groundY, buildingW, 0); // start with 0 height
 
-      // Building main body
-      g.fillStyle(color, 1);
-      g.fillRect(leftX, topY, w, h);
-
-      // Right side shadow panel (gives 3D feel)
-      g.fillStyle(darkColor, 0.6);
-      g.fillRect(rightX - w * 0.15, topY, w * 0.15, h);
-
-      // Left side highlight strip
-      g.fillStyle(lightColor, 0.15);
-      g.fillRect(leftX, topY, 3, h);
-
-      // Horizontal floor separators
-      const floorH = 25;
-      const numFloors = Math.floor(h / floorH);
-      g.lineStyle(1, darkColor, 0.4);
-      for (let f = 1; f < numFloors; f++) {
-        const fy = topY + f * floorH;
-        g.lineBetween(leftX, fy, rightX, fy);
-      }
-
-      // Decorative cornice at top
-      g.fillStyle(lightColor, 0.5);
-      g.fillRect(leftX - 3, topY, w + 6, 4);
-
-      // Roof based on type
+      // Accent roof bar
       const roofG = this.add.graphics();
-      let roofExtraH = 0;
-      switch (roofType) {
-        case 'pointed':
-          roofExtraH = 30;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillTriangle(leftX - 2, topY, rightX + 2, topY, x, topY - roofExtraH);
-          // Antenna on peak
-          roofG.lineStyle(2, 0xbdc3c7, 0.8);
-          roofG.lineBetween(x, topY - roofExtraH, x, topY - roofExtraH - 12);
-          roofG.fillStyle(0xe74c3c, 1);
-          roofG.fillCircle(x, topY - roofExtraH - 14, 3);
-          break;
-        case 'stepped':
-          roofExtraH = 20;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillRect(leftX + w * 0.2, topY - roofExtraH, w * 0.6, roofExtraH);
-          roofG.fillRect(leftX + w * 0.35, topY - roofExtraH - 10, w * 0.3, 10);
-          break;
-        case 'dome':
-          roofExtraH = 18;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillEllipse(x, topY - 2, w * 0.6, roofExtraH * 2);
-          break;
-        case 'antenna':
-          roofExtraH = 30;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillRect(leftX, topY - 5, w, 5);
-          // Tall antenna
-          roofG.lineStyle(2, 0x95a5a6, 1);
-          roofG.lineBetween(x, topY - 5, x, topY - roofExtraH);
-          // Cross bars
-          roofG.lineStyle(1, 0x95a5a6, 0.7);
-          roofG.lineBetween(x - 8, topY - 18, x + 8, topY - 18);
-          roofG.lineBetween(x - 5, topY - 25, x + 5, topY - 25);
-          // Red light
-          roofG.fillStyle(0xe74c3c, 1);
-          roofG.fillCircle(x, topY - roofExtraH - 2, 3);
-          break;
-        case 'slant':
-          roofExtraH = 15;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillTriangle(leftX - 3, topY, rightX + 3, topY, leftX + 10, topY - roofExtraH);
-          break;
-        case 'crown':
-          roofExtraH = 16;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillRect(leftX, topY - 6, w, 6);
-          // Crown pillars
-          const pillarCount = 4;
-          const pillarSpacing = w / (pillarCount + 1);
-          for (let p = 1; p <= pillarCount; p++) {
-            roofG.fillRect(leftX + p * pillarSpacing - 3, topY - roofExtraH, 6, roofExtraH - 6);
-          }
-          roofG.fillRect(leftX + pillarSpacing - 3, topY - roofExtraH - 2, (pillarCount - 1) * pillarSpacing + 6, 3);
-          break;
-        default: // flat
-          roofExtraH = 6;
-          roofG.fillStyle(darkColor, 1);
-          roofG.fillRect(leftX - 4, topY - roofExtraH, w + 8, roofExtraH);
-          // Small AC unit boxes
-          if (Math.random() > 0.4) {
-            roofG.fillStyle(0x7f8c8d, 0.8);
-            roofG.fillRect(x - 12, topY - roofExtraH - 8, 10, 8);
-            roofG.fillRect(x + 5, topY - roofExtraH - 6, 8, 6);
-          }
-          break;
-      }
+      roofG.fillStyle(accent.color, 0.9);
+      roofG.fillRect(bx, groundY, buildingW, 3);
 
-      // Windows with frames and ledges
-      const windowMarginTop = 15;
-      const windowSpacingX = 18;
-      const windowSpacingY = 25;
-      const windowW = 8;
-      const windowH = 11;
-      const rows = Math.floor((h - windowMarginTop - 25) / windowSpacingY);
-      const cols = Math.floor((w - 16) / windowSpacingX);
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const wx = leftX + 9 + c * windowSpacingX;
-          const wy = topY + windowMarginTop + r * windowSpacingY;
-          const lit = Math.random() > 0.3;
+      // Side shadow for 3D effect
+      const shadowG = this.add.graphics();
+      shadowG.fillStyle(0x000000, 0.15);
+      shadowG.fillRect(bx + buildingW - 6, groundY, 6, 0);
 
-          // Window frame
-          g.fillStyle(0x0a0a1a, 0.6);
-          g.fillRect(wx - 1, wy - 1, windowW + 2, windowH + 2);
+      // Windows (draw after animation)
+      const windowG = this.add.graphics();
 
-          // Window glass
-          if (lit) {
-            g.fillStyle(0xf1c40f, 0.6);
-            g.fillRect(wx, wy, windowW, windowH);
-            // Curtain half-drawn effect
-            if (Math.random() > 0.5) {
-              g.fillStyle(0xe67e22, 0.3);
-              g.fillRect(wx, wy, windowW / 2, windowH);
-            }
-          } else {
-            g.fillStyle(0x0a0a1a, 0.5);
-            g.fillRect(wx, wy, windowW, windowH);
-          }
+      // Area name label (above building)
+      const nameLabel = this.add.text(centerX, by - 32, area.name, {
+        fontSize: '10px',
+        fontFamily: 'Segoe UI, sans-serif',
+        color: '#bdc3c7',
+        fontStyle: 'bold',
+        align: 'center',
+      }).setOrigin(0.5).setAlpha(0);
 
-          // Window cross divider
-          g.lineStyle(1, 0x1a1a2e, 0.4);
-          g.lineBetween(wx + windowW / 2, wy, wx + windowW / 2, wy + windowH);
-          g.lineBetween(wx, wy + windowH / 2, wx + windowW, wy + windowH / 2);
+      // Icon above name
+      const iconText = this.add.text(centerX, by - 48, icons[i], {
+        fontSize: '16px',
+      }).setOrigin(0.5).setAlpha(0);
 
-          // Window ledge
-          g.fillStyle(lightColor, 0.3);
-          g.fillRect(wx - 1, wy + windowH + 1, windowW + 2, 2);
-        }
-      }
-
-      // Entrance door at ground level
-      const doorW = 14;
-      const doorH = 22;
-      const doorX = x - doorW / 2;
-      const doorY = baseY - doorH;
-      g.fillStyle(0x1a1a2e, 0.8);
-      g.fillRect(doorX, doorY, doorW, doorH);
-      // Door frame
-      g.lineStyle(1, lightColor, 0.5);
-      g.strokeRect(doorX, doorY, doorW, doorH);
-      // Door knob
-      g.fillStyle(0xf39c12, 0.7);
-      g.fillCircle(doorX + doorW - 3, doorY + doorH / 2, 1.5);
-      // Awning above door
-      g.fillStyle(darkColor, 0.7);
-      g.fillTriangle(doorX - 6, doorY, doorX + doorW + 6, doorY, x, doorY - 8);
-
-      // Street lamp next to some buildings
-      if (i % 2 === 0) {
-        const lampX = rightX + 15;
-        g.lineStyle(2, 0x7f8c8d, 1);
-        g.lineBetween(lampX, baseY, lampX, baseY - 50);
-        g.lineBetween(lampX, baseY - 50, lampX - 8, baseY - 55);
-        g.fillStyle(0xf1c40f, 0.7);
-        g.fillCircle(lampX - 8, baseY - 57, 4);
-      }
-
-      // Price tag
-      const tagBg = this.add.rectangle(x, topY - roofExtraH - 22, 140, 32, 0x000000, 0.8);
-      tagBg.setStrokeStyle(1, 0xf39c12);
-
-      const priceText = this.add.text(x, topY - roofExtraH - 22, `${area.name}: $${area.price.toLocaleString()}`, {
+      // Price label
+      const priceLabel = this.add.text(centerX, by - 16, `$${area.price.toLocaleString()}`, {
         fontSize: '11px',
         fontFamily: 'Segoe UI, sans-serif',
-        color: '#f39c12',
+        color: accent.hex,
         fontStyle: 'bold',
-      }).setOrigin(0.5);
+        align: 'center',
+      }).setOrigin(0.5).setAlpha(0);
 
-      // Area name below building
-      const nameText = this.add.text(x, height - 80 + 5, area.name, {
-        fontSize: '10px',
-        color: '#7f8c8d',
-      }).setOrigin(0.5);
+      // Animate building growing from ground
+      const animDelay = 300 + i * 150;
 
-      buildingGroup.push(g, roofG, tagBg, priceText, nameText);
+      // Use a tween on a dummy value to progressively redraw
+      const dummy = { progress: 0 };
+      this.tweens.add({
+        targets: dummy,
+        progress: 1,
+        duration: 700,
+        ease: 'Power2.easeOut',
+        delay: animDelay,
+        onUpdate: () => {
+          const currentH = bH * dummy.progress;
+          const currentY = groundY - currentH;
+
+          // Redraw building body
+          bldgGraphics.clear();
+          bldgGraphics.fillStyle(buildingColors[i % buildingColors.length], 1);
+          bldgGraphics.fillRect(bx, currentY, buildingW, currentH);
+
+          // Redraw roof accent
+          roofG.clear();
+          roofG.fillStyle(accent.color, 0.9);
+          roofG.fillRect(bx, currentY, buildingW, 3);
+
+          // Redraw shadow
+          shadowG.clear();
+          shadowG.fillStyle(0x000000, 0.15);
+          shadowG.fillRect(bx + buildingW - 6, currentY, 6, currentH);
+        },
+        onComplete: () => {
+          // Draw windows after building is fully grown
+          const winCols = Math.max(1, Math.floor((buildingW - 10) / 12));
+          const winRows = Math.max(1, Math.floor((bH - 10) / 16));
+          const winW = 5;
+          const winH = 7;
+          const winGapX = (buildingW - 10) / winCols;
+          const winGapY = (bH - 10) / winRows;
+
+          for (let r = 0; r < winRows; r++) {
+            for (let c = 0; c < winCols; c++) {
+              if (Math.random() > 0.35) {
+                const wx = bx + 5 + c * winGapX + (winGapX - winW) / 2;
+                const wy = by + 8 + r * winGapY;
+                const warmth = Math.random();
+                if (warmth > 0.5) {
+                  windowG.fillStyle(0xf1c40f, 0.3 + Math.random() * 0.4);
+                } else {
+                  windowG.fillStyle(0xe8a838, 0.2 + Math.random() * 0.35);
+                }
+                windowG.fillRect(wx, wy, winW, winH);
+              }
+            }
+          }
+
+          // Fade in labels after building completes
+          this.tweens.add({
+            targets: [nameLabel, iconText, priceLabel],
+            alpha: 1,
+            y: '-=8',
+            duration: 400,
+            ease: 'Power2',
+          });
+        },
+      });
     });
 
-    // Scroll all buildings from right to left
-    const totalWidth = this.areaPrices.length * 220;
-    this.tweens.add({
-      targets: buildingGroup,
-      x: `-=${totalWidth + width}`,
-      duration: 8000,
-      ease: 'Linear',
-      onComplete: () => {
-        this.showHousePriceSummary();
-      }
-    });
+    // ===== Continue button =====
+    const btnDelay = 300 + this.areaPrices.length * 150 + 900;
+    const btnY = 138;
+    const btnBg = this.add.graphics();
+    btnBg.fillStyle(0x3498db, 1);
+    btnBg.fillRoundedRect(width / 2 - 80, btnY - 15, 160, 30, 6);
 
-    // Walking character at bottom
-    const playerChar = this.add.circle(100, height - 50, 8, 0x3498db);
-    const playerBody = this.add.rectangle(100, height - 40, 4, 14, 0x3498db);
-
-    // Simple walking bob animation
-    this.tweens.add({
-      targets: [playerChar, playerBody],
-      y: '-=3',
-      duration: 300,
-      yoyo: true,
-      repeat: -1,
-    });
-
-    // Skip button
-    const skipBtn = this.add.text(width - 20, height - 15, 'Skip ▶', {
-      fontSize: '12px',
-      color: '#7f8c8d',
+    const btnText = this.add.text(width / 2, btnY, 'Continue →', {
+      fontSize: '13px',
+      fontFamily: 'Segoe UI, sans-serif',
+      color: '#ffffff',
       fontStyle: 'bold',
-    }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
+    }).setOrigin(0.5);
 
-    skipBtn.on('pointerover', () => skipBtn.setColor('#ecf0f1'));
-    skipBtn.on('pointerout', () => skipBtn.setColor('#7f8c8d'));
-    skipBtn.on('pointerdown', () => {
-      this.tweens.killAll();
+    const btnZone = this.add.zone(width / 2, btnY, 160, 30).setInteractive({ useHandCursor: true });
+
+    btnZone.on('pointerover', () => {
+      btnBg.clear();
+      btnBg.fillStyle(0x2980b9, 1);
+      btnBg.fillRoundedRect(width / 2 - 80, btnY - 15, 160, 30, 6);
+    });
+    btnZone.on('pointerout', () => {
+      btnBg.clear();
+      btnBg.fillStyle(0x3498db, 1);
+      btnBg.fillRoundedRect(width / 2 - 80, btnY - 15, 160, 30, 6);
+    });
+    btnZone.on('pointerdown', () => {
       this.showHousePriceSummary();
+    });
+
+    // Button fade-in
+    [btnBg, btnText, btnZone].forEach(obj => obj.setAlpha(0));
+    this.tweens.add({
+      targets: [btnBg, btnText, btnZone],
+      alpha: 1,
+      duration: 500,
+      ease: 'Power2',
+      delay: btnDelay,
     });
   }
 
