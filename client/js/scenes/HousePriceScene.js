@@ -67,6 +67,7 @@ class HousePriceScene extends Phaser.Scene {
 
     // Create scrolling buildings with price tags
     const buildingColors = [0x2980b9, 0x8e44ad, 0x27ae60, 0xc0392b, 0x16a085, 0xd35400, 0x2c3e50, 0x9b59b6];
+    const roofTypes = ['flat', 'pointed', 'stepped', 'dome', 'antenna', 'slant', 'crown', 'flat'];
     const startX = width + 50;
     const buildingGroup = [];
 
@@ -74,29 +75,187 @@ class HousePriceScene extends Phaser.Scene {
       const x = startX + i * 220;
       const h = 120 + Math.random() * 150;
       const w = 100 + Math.random() * 60;
-      const y = height - 80 - h / 2;
+      const baseY = height - 80;
+      const topY = baseY - h;
+      const leftX = x - w / 2;
+      const rightX = x + w / 2;
       const color = buildingColors[i % buildingColors.length];
+      const darkColor = Phaser.Display.Color.ValueToColor(color).darken(25).color;
+      const lightColor = Phaser.Display.Color.ValueToColor(color).lighten(15).color;
+      const roofType = roofTypes[i % roofTypes.length];
 
-      // Building body
-      const building = this.add.rectangle(x, y, w, h, color);
+      const g = this.add.graphics();
 
-      // Windows
-      const rows = Math.floor(h / 25);
-      const cols = Math.floor(w / 18);
+      // Building main body
+      g.fillStyle(color, 1);
+      g.fillRect(leftX, topY, w, h);
+
+      // Right side shadow panel (gives 3D feel)
+      g.fillStyle(darkColor, 0.6);
+      g.fillRect(rightX - w * 0.15, topY, w * 0.15, h);
+
+      // Left side highlight strip
+      g.fillStyle(lightColor, 0.15);
+      g.fillRect(leftX, topY, 3, h);
+
+      // Horizontal floor separators
+      const floorH = 25;
+      const numFloors = Math.floor(h / floorH);
+      g.lineStyle(1, darkColor, 0.4);
+      for (let f = 1; f < numFloors; f++) {
+        const fy = topY + f * floorH;
+        g.lineBetween(leftX, fy, rightX, fy);
+      }
+
+      // Decorative cornice at top
+      g.fillStyle(lightColor, 0.5);
+      g.fillRect(leftX - 3, topY, w + 6, 4);
+
+      // Roof based on type
+      const roofG = this.add.graphics();
+      let roofExtraH = 0;
+      switch (roofType) {
+        case 'pointed':
+          roofExtraH = 30;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillTriangle(leftX - 2, topY, rightX + 2, topY, x, topY - roofExtraH);
+          // Antenna on peak
+          roofG.lineStyle(2, 0xbdc3c7, 0.8);
+          roofG.lineBetween(x, topY - roofExtraH, x, topY - roofExtraH - 12);
+          roofG.fillStyle(0xe74c3c, 1);
+          roofG.fillCircle(x, topY - roofExtraH - 14, 3);
+          break;
+        case 'stepped':
+          roofExtraH = 20;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillRect(leftX + w * 0.2, topY - roofExtraH, w * 0.6, roofExtraH);
+          roofG.fillRect(leftX + w * 0.35, topY - roofExtraH - 10, w * 0.3, 10);
+          break;
+        case 'dome':
+          roofExtraH = 18;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillEllipse(x, topY - 2, w * 0.6, roofExtraH * 2);
+          break;
+        case 'antenna':
+          roofExtraH = 30;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillRect(leftX, topY - 5, w, 5);
+          // Tall antenna
+          roofG.lineStyle(2, 0x95a5a6, 1);
+          roofG.lineBetween(x, topY - 5, x, topY - roofExtraH);
+          // Cross bars
+          roofG.lineStyle(1, 0x95a5a6, 0.7);
+          roofG.lineBetween(x - 8, topY - 18, x + 8, topY - 18);
+          roofG.lineBetween(x - 5, topY - 25, x + 5, topY - 25);
+          // Red light
+          roofG.fillStyle(0xe74c3c, 1);
+          roofG.fillCircle(x, topY - roofExtraH - 2, 3);
+          break;
+        case 'slant':
+          roofExtraH = 15;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillTriangle(leftX - 3, topY, rightX + 3, topY, leftX + 10, topY - roofExtraH);
+          break;
+        case 'crown':
+          roofExtraH = 16;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillRect(leftX, topY - 6, w, 6);
+          // Crown pillars
+          const pillarCount = 4;
+          const pillarSpacing = w / (pillarCount + 1);
+          for (let p = 1; p <= pillarCount; p++) {
+            roofG.fillRect(leftX + p * pillarSpacing - 3, topY - roofExtraH, 6, roofExtraH - 6);
+          }
+          roofG.fillRect(leftX + pillarSpacing - 3, topY - roofExtraH - 2, (pillarCount - 1) * pillarSpacing + 6, 3);
+          break;
+        default: // flat
+          roofExtraH = 6;
+          roofG.fillStyle(darkColor, 1);
+          roofG.fillRect(leftX - 4, topY - roofExtraH, w + 8, roofExtraH);
+          // Small AC unit boxes
+          if (Math.random() > 0.4) {
+            roofG.fillStyle(0x7f8c8d, 0.8);
+            roofG.fillRect(x - 12, topY - roofExtraH - 8, 10, 8);
+            roofG.fillRect(x + 5, topY - roofExtraH - 6, 8, 6);
+          }
+          break;
+      }
+
+      // Windows with frames and ledges
+      const windowMarginTop = 15;
+      const windowSpacingX = 18;
+      const windowSpacingY = 25;
+      const windowW = 8;
+      const windowH = 11;
+      const rows = Math.floor((h - windowMarginTop - 25) / windowSpacingY);
+      const cols = Math.floor((w - 16) / windowSpacingX);
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const wx = x - w / 2 + 9 + c * 18;
-          const wy = y - h / 2 + 12 + r * 25;
+          const wx = leftX + 9 + c * windowSpacingX;
+          const wy = topY + windowMarginTop + r * windowSpacingY;
           const lit = Math.random() > 0.3;
-          this.add.rectangle(wx, wy, 7, 9, lit ? 0xf1c40f : 0x0a0a1a, lit ? 0.6 : 0.4);
+
+          // Window frame
+          g.fillStyle(0x0a0a1a, 0.6);
+          g.fillRect(wx - 1, wy - 1, windowW + 2, windowH + 2);
+
+          // Window glass
+          if (lit) {
+            g.fillStyle(0xf1c40f, 0.6);
+            g.fillRect(wx, wy, windowW, windowH);
+            // Curtain half-drawn effect
+            if (Math.random() > 0.5) {
+              g.fillStyle(0xe67e22, 0.3);
+              g.fillRect(wx, wy, windowW / 2, windowH);
+            }
+          } else {
+            g.fillStyle(0x0a0a1a, 0.5);
+            g.fillRect(wx, wy, windowW, windowH);
+          }
+
+          // Window cross divider
+          g.lineStyle(1, 0x1a1a2e, 0.4);
+          g.lineBetween(wx + windowW / 2, wy, wx + windowW / 2, wy + windowH);
+          g.lineBetween(wx, wy + windowH / 2, wx + windowW, wy + windowH / 2);
+
+          // Window ledge
+          g.fillStyle(lightColor, 0.3);
+          g.fillRect(wx - 1, wy + windowH + 1, windowW + 2, 2);
         }
       }
 
+      // Entrance door at ground level
+      const doorW = 14;
+      const doorH = 22;
+      const doorX = x - doorW / 2;
+      const doorY = baseY - doorH;
+      g.fillStyle(0x1a1a2e, 0.8);
+      g.fillRect(doorX, doorY, doorW, doorH);
+      // Door frame
+      g.lineStyle(1, lightColor, 0.5);
+      g.strokeRect(doorX, doorY, doorW, doorH);
+      // Door knob
+      g.fillStyle(0xf39c12, 0.7);
+      g.fillCircle(doorX + doorW - 3, doorY + doorH / 2, 1.5);
+      // Awning above door
+      g.fillStyle(darkColor, 0.7);
+      g.fillTriangle(doorX - 6, doorY, doorX + doorW + 6, doorY, x, doorY - 8);
+
+      // Street lamp next to some buildings
+      if (i % 2 === 0) {
+        const lampX = rightX + 15;
+        g.lineStyle(2, 0x7f8c8d, 1);
+        g.lineBetween(lampX, baseY, lampX, baseY - 50);
+        g.lineBetween(lampX, baseY - 50, lampX - 8, baseY - 55);
+        g.fillStyle(0xf1c40f, 0.7);
+        g.fillCircle(lampX - 8, baseY - 57, 4);
+      }
+
       // Price tag
-      const tagBg = this.add.rectangle(x, y - h / 2 - 25, 140, 32, 0x000000, 0.8);
+      const tagBg = this.add.rectangle(x, topY - roofExtraH - 22, 140, 32, 0x000000, 0.8);
       tagBg.setStrokeStyle(1, 0xf39c12);
 
-      const priceText = this.add.text(x, y - h / 2 - 25, `${area.name}: $${area.price.toLocaleString()}`, {
+      const priceText = this.add.text(x, topY - roofExtraH - 22, `${area.name}: $${area.price.toLocaleString()}`, {
         fontSize: '11px',
         fontFamily: 'Segoe UI, sans-serif',
         color: '#f39c12',
@@ -109,7 +268,7 @@ class HousePriceScene extends Phaser.Scene {
         color: '#7f8c8d',
       }).setOrigin(0.5);
 
-      buildingGroup.push(building, tagBg, priceText, nameText);
+      buildingGroup.push(g, roofG, tagBg, priceText, nameText);
     });
 
     // Scroll all buildings from right to left
