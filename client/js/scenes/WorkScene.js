@@ -83,18 +83,18 @@ class WorkScene extends Phaser.Scene {
     }).setOrigin(0, 0.5);
 
     // Central work area — clickable zone
-    const workAreaY = height / 2 - 20;
-    const workArea = this.add.rectangle(width / 2, workAreaY, 300, 300, 0x16213e)
+    const workAreaY = height / 2 - 30;
+    const workArea = this.add.rectangle(width / 2, workAreaY, 300, 280, 0x16213e)
       .setStrokeStyle(2, 0x3498db)
       .setInteractive({ useHandCursor: true });
 
     // Task icon in work area
-    this.taskIcon = this.add.text(width / 2, workAreaY - 30, theme.icon, {
+    this.taskIcon = this.add.text(width / 2, workAreaY - 50, theme.icon, {
       fontSize: '64px',
     }).setOrigin(0.5);
 
     // Click counter in work area
-    this.clickCountText = this.add.text(width / 2, workAreaY + 40, `0 / ${this.clicksPerUnit}`, {
+    this.clickCountText = this.add.text(width / 2, workAreaY + 20, `0 / ${this.clicksPerUnit}`, {
       fontSize: '20px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#ecf0f1',
@@ -102,23 +102,78 @@ class WorkScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Progress bar background
-    const barY = workAreaY + 80;
+    const barY = workAreaY + 60;
     this.add.rectangle(width / 2, barY, 260, 16, 0x2c3e50).setOrigin(0.5);
 
     // Progress bar fill
     this.progressBar = this.add.rectangle(width / 2 - 130, barY, 0, 16, 0x3498db).setOrigin(0, 0.5);
 
-    // Status text below work area
-    this.statusText = this.add.text(width / 2, barY + 40, 'Click the work area to start!', {
-      fontSize: '14px',
+    // Status text below progress bar (inside work area)
+    this.statusText = this.add.text(width / 2, barY + 30, 'Click the work area to start!', {
+      fontSize: '12px',
       color: '#f39c12',
+      wordWrap: { width: 260 },
+      align: 'center',
     }).setOrigin(0.5);
 
-    // Salary info at bottom
-    const bonusT = cfg.bonusThreshold;
-    const penaltyT = cfg.penaltyThreshold;
-    this.add.text(width / 2, height - 40, `Complete > ${bonusT} ${theme.unitLabel} for bonus | < ${penaltyT} = salary deduction`, {
-      fontSize: '12px',
+    // === Overall Goal Progress Bar (below work area) ===
+    const goalBarY = workAreaY + 170;
+    const goalBarW = 300;
+    const goalBarH = 18;
+    const goalBarX = width / 2 - goalBarW / 2;
+    // Max display units (a bit beyond bonus threshold for visual room)
+    const maxDisplayUnits = cfg.bonusThreshold + 5;
+
+    // Background track
+    this.add.rectangle(width / 2, goalBarY, goalBarW, goalBarH, 0x1a1a2e)
+      .setStrokeStyle(1, 0x2c3e50);
+
+    // Penalty zone (red) — 0 to penaltyThreshold
+    const penaltyW = (cfg.penaltyThreshold / maxDisplayUnits) * goalBarW;
+    this.add.rectangle(goalBarX, goalBarY, penaltyW, goalBarH, 0x6b2020).setOrigin(0, 0.5);
+
+    // Normal zone (dim yellow) — penaltyThreshold to bonusThreshold
+    const normalW = ((cfg.bonusThreshold - cfg.penaltyThreshold) / maxDisplayUnits) * goalBarW;
+    this.add.rectangle(goalBarX + penaltyW, goalBarY, normalW, goalBarH, 0x5a5a20).setOrigin(0, 0.5);
+
+    // Bonus zone (green) — bonusThreshold onwards
+    const bonusW = goalBarW - penaltyW - normalW;
+    this.add.rectangle(goalBarX + penaltyW + normalW, goalBarY, bonusW, goalBarH, 0x1a5a2a).setOrigin(0, 0.5);
+
+    // Threshold markers with labels
+    const penaltyLineX = goalBarX + penaltyW;
+    const bonusLineX = goalBarX + penaltyW + normalW;
+    this.add.rectangle(penaltyLineX, goalBarY, 2, goalBarH + 6, 0xe74c3c).setOrigin(0.5);
+    this.add.rectangle(bonusLineX, goalBarY, 2, goalBarH + 6, 0x2ecc71).setOrigin(0.5);
+
+    this.add.text(penaltyLineX, goalBarY + goalBarH / 2 + 8, `${cfg.penaltyThreshold}`, {
+      fontSize: '9px', color: '#e74c3c',
+    }).setOrigin(0.5, 0);
+    this.add.text(bonusLineX, goalBarY + goalBarH / 2 + 8, `${cfg.bonusThreshold}`, {
+      fontSize: '9px', color: '#2ecc71',
+    }).setOrigin(0.5, 0);
+
+    // Current progress fill (bright overlay)
+    this.goalProgressFill = this.add.rectangle(goalBarX, goalBarY, 0, goalBarH - 4, 0x3498db)
+      .setOrigin(0, 0.5).setAlpha(0.7);
+
+    // Current units label on the bar
+    this.goalLabel = this.add.text(width / 2, goalBarY, '0 / ' + maxDisplayUnits + '+ ' + theme.unitLabel, {
+      fontSize: '10px',
+      fontFamily: 'Segoe UI, sans-serif',
+      color: '#ecf0f1',
+      fontStyle: 'bold',
+    }).setOrigin(0.5).setDepth(1);
+
+    // Store for updates
+    this.goalBarW = goalBarW;
+    this.goalBarX = goalBarX;
+    this.maxDisplayUnits = maxDisplayUnits;
+    this.goalTheme = theme;
+
+    // Salary hint below goal bar
+    this.add.text(width / 2, goalBarY + goalBarH / 2 + 22, `< ${cfg.penaltyThreshold} deduction  |  > ${cfg.bonusThreshold} bonus`, {
+      fontSize: '11px',
       color: '#7f8c8d',
     }).setOrigin(0.5);
 
@@ -171,12 +226,15 @@ class WorkScene extends Phaser.Scene {
     this.completedUnits++;
     this.unitsText.setText(`${this.getUnitLabel()}: ${this.completedUnits}`);
 
+    // Update overall goal progress bar
+    this.updateGoalProgress();
+
     // Flash effect
     this.cameras.main.flash(200, 46, 204, 113, true);
 
     // Wait for space to continue
     this.waitingForSpace = true;
-    this.statusText.setText('✅ Unit complete! Press SPACE for next one.');
+    this.statusText.setText('✅ Done! Press SPACE for next.');
     this.statusText.setColor('#2ecc71');
   }
 
@@ -186,6 +244,7 @@ class WorkScene extends Phaser.Scene {
     this.clickCountText.setText(`0 / ${this.clicksPerUnit}`);
     this.progressBar.width = 0;
     this.statusText.setText('Keep clicking!');
+    this.statusText.setFontSize(12);
     this.statusText.setColor('#f39c12');
   }
 
@@ -300,6 +359,26 @@ class WorkScene extends Phaser.Scene {
       // Transition to MonthEndScene for living expenses
       this.scene.start('MonthEndScene');
     });
+  }
+
+  updateGoalProgress() {
+    const cfg = GameState.config;
+    const progress = Math.min(this.completedUnits / this.maxDisplayUnits, 1);
+    this.goalProgressFill.width = this.goalBarW * progress;
+
+    // Update color based on zone
+    if (this.completedUnits > cfg.bonusThreshold) {
+      this.goalProgressFill.fillColor = 0x2ecc71; // green — bonus zone
+      this.goalLabel.setColor('#2ecc71');
+    } else if (this.completedUnits >= cfg.penaltyThreshold) {
+      this.goalProgressFill.fillColor = 0xf39c12; // yellow — safe zone
+      this.goalLabel.setColor('#f39c12');
+    } else {
+      this.goalProgressFill.fillColor = 0xe74c3c; // red — penalty zone
+      this.goalLabel.setColor('#e74c3c');
+    }
+
+    this.goalLabel.setText(`${this.completedUnits} ${this.goalTheme.unitLabel}`);
   }
 
   getUnitLabel() {

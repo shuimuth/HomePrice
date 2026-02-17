@@ -36,6 +36,9 @@ class LotteryScene extends Phaser.Scene {
           Current balance: <strong style="color: #2ecc71;">$${GameState.balance.toLocaleString()}</strong>
           &nbsp;|&nbsp; Ticket price: <strong style="color: #f39c12;">$${price}</strong>
         </p>
+        <p style="color: #3498db; text-align: center; font-size: 13px; margin-bottom: 10px; font-style: italic;">
+          💰 If you win, the prize money will be automatically added to your account balance.
+        </p>
 
         <div class="card-row" id="lottery-cards">
           <div class="card lottery-card" data-choice="A" style="min-width: 180px;">
