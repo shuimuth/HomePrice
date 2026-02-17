@@ -195,19 +195,41 @@ class CityScene extends Phaser.Scene {
     const container = document.createElement('div');
     container.className = 'modal-backdrop';
     container.style.background = 'rgba(0,0,0,0.6)';
+    const countdownStart = 3;
     container.innerHTML = `
       <div style="text-align: center; color: #ecf0f1;">
         <h1 style="font-size: 48px; color: #f39c12; margin-bottom: 10px;">Month ${month}</h1>
         <p style="font-size: 18px; color: #bdc3c7;">Time to get to work!</p>
+        <p id="countdown-number" style="font-size: 64px; font-weight: bold; color: #e74c3c; margin-top: 16px; transition: transform 0.3s ease, opacity 0.3s ease;">${countdownStart}</p>
       </div>
     `;
     overlay.appendChild(container);
 
-    // Auto-dismiss after 1.5 seconds
-    setTimeout(() => {
-      overlay.innerHTML = '';
-      callback();
-    }, 1500);
+    // Countdown timer
+    let remaining = countdownStart;
+    const countdownEl = document.getElementById('countdown-number');
+    const countdownInterval = setInterval(() => {
+      remaining--;
+      if (remaining > 0) {
+        // Animate: scale up then back
+        countdownEl.style.transform = 'scale(1.4)';
+        countdownEl.style.opacity = '0.5';
+        setTimeout(() => {
+          countdownEl.textContent = remaining;
+          countdownEl.style.transform = 'scale(1)';
+          countdownEl.style.opacity = '1';
+        }, 150);
+      } else {
+        clearInterval(countdownInterval);
+        countdownEl.textContent = 'GO!';
+        countdownEl.style.color = '#2ecc71';
+        countdownEl.style.transform = 'scale(1.5)';
+        setTimeout(() => {
+          overlay.innerHTML = '';
+          callback();
+        }, 600);
+      }
+    }, 1000);
   }
 
   startWork() {
