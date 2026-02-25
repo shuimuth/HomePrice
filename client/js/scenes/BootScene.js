@@ -19,7 +19,7 @@ class BootScene extends Phaser.Scene {
     this.drawSkyline(width, height);
 
     // Game title
-    const titleText = this.add.text(width / 2, height * 0.22, 'VALRENTA CITY', {
+    const titleText = this.add.text(width / 2, height * 0.22, 'VALRENTA CITY LIFE', {
       fontSize: '42px',
       fontFamily: 'Georgia, serif',
       color: '#3498db',
@@ -29,7 +29,7 @@ class BootScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Subtitle
-    this.add.text(width / 2, height * 0.32, 'A Life Simulation Experience', {
+    this.add.text(width / 2, height * 0.32, 'A life simulation experience', {
       fontSize: '18px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#bdc3c7',
@@ -37,20 +37,15 @@ class BootScene extends Phaser.Scene {
 
     // Description
     const desc = [
-      'Welcome to Valrenta City, a bustling modern metropolis.',
-      'You are about to begin your new life here.',
-      '',
-      'Over the next few months, you will work, earn a living,',
-      'and make important financial decisions.',
-      '',
-      'Your long-term goal: save up and buy a home in this city.',
+      '\u2014 customize your avatar and',
+      'build a life in the city of Valrenta!',
     ];
-    this.add.text(width / 2, height * 0.52, desc.join('\n'), {
-      fontSize: '14px',
+    this.add.text(width / 2, height * 0.48, desc.join('\n'), {
+      fontSize: '16px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#95a5a6',
       align: 'center',
-      lineSpacing: 6,
+      lineSpacing: 8,
     }).setOrigin(0.5);
 
     // Start button
