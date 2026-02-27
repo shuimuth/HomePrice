@@ -378,3 +378,17 @@ body {
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* --- Avatar Color Swatches --- */
+.color-swatch:hover {
+  transform: scale(1.18) !important;
+}
+
+.color-swatch:active {
+  transform: scale(0.95) !important;
+}
+
+#avatar-preview svg {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease;
+}

@@ -25,11 +25,13 @@ router.post('/session', (req, res) => {
         balance: player.balance,
         currentPhase: player.current_phase,
         currentMonth: player.current_month,
-        character: player.name ? {
+      character: player.name ? {
           gender: player.gender,
           age: player.age,
           race: player.race,
           name: player.name,
+          skinTone: player.skin_tone,
+          hairColor: player.hair_color,
         } : null,
         jobType: player.job_type,
       });
@@ -56,13 +58,13 @@ router.post('/session', (req, res) => {
 // --- PUT /api/character --- Save character info
 router.put('/character', (req, res) => {
   try {
-    const { uid, gender, age, race, name } = req.body;
+    const { uid, gender, age, race, name, skinTone, hairColor } = req.body;
     if (!uid) return res.status(400).json({ error: 'Missing uid' });
-    if (!gender || !age || !race || !name) {
-      return res.status(400).json({ error: 'All character fields are required' });
+    if (!gender || !age || !name) {
+      return res.status(400).json({ error: 'Required character fields are missing' });
     }
 
-    db.updateCharacter(uid, { gender, age, race, name });
+    db.updateCharacter(uid, { gender, age, race: race || '', name, skinTone, hairColor });
     res.json({ success: true });
   } catch (error) {
     console.error('Error in PUT /character:', error);
@@ -177,7 +179,7 @@ router.get('/export', (req, res) => {
     const columns = [
       'uid', 'condition_group',
       'lottery_choice', 'low_risk_percent', 'high_risk_percent',
-      'gender', 'age', 'race', 'name', 'job_type',
+      'gender', 'age', 'race', 'name', 'skin_tone', 'hair_color', 'job_type',
       'month1_clicks', 'month1_units', 'month1_time_spent',
       'month2_clicks', 'month2_units', 'month2_time_spent',
       'month3_clicks', 'month3_units', 'month3_time_spent',

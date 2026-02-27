@@ -20,6 +20,14 @@ const db = new Database(DB_PATH);
 // Enable WAL mode for better concurrent read performance
 db.pragma('journal_mode = WAL');
 
+// --- Safe column migration for existing databases ---
+function addColumnIfNotExists(table, column, type) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.find(c => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
+}
+
 // --- Create Tables ---
 db.exec(`
   CREATE TABLE IF NOT EXISTS players (
@@ -33,6 +41,8 @@ db.exec(`
     age TEXT,
     race TEXT,
     name TEXT,
+    skin_tone TEXT,
+    hair_color TEXT,
 
     -- Job
     job_type TEXT,
@@ -79,6 +89,10 @@ db.exec(`
   )
 `);
 
+// Migrate existing databases: add new columns if missing
+addColumnIfNotExists('players', 'skin_tone', 'TEXT');
+addColumnIfNotExists('players', 'hair_color', 'TEXT');
+
 // --- Prepared Statements ---
 
 const stmts = {
@@ -94,7 +108,7 @@ const stmts = {
   `),
 
   updateCharacter: db.prepare(`
-    UPDATE players SET gender = @gender, age = @age, race = @race, name = @name, current_phase = 'character_done'
+    UPDATE players SET gender = @gender, age = @age, race = @race, name = @name, skin_tone = @skin_tone, hair_color = @hair_color, current_phase = 'character_done'
     WHERE uid = @uid
   `),
 
@@ -202,8 +216,8 @@ function createPlayer(uid, initialFunds) {
 /**
  * Update character info
  */
-function updateCharacter(uid, { gender, age, race, name }) {
-  return stmts.updateCharacter.run({ uid, gender, age, race, name });
+function updateCharacter(uid, { gender, age, race, name, skinTone, hairColor }) {
+  return stmts.updateCharacter.run({ uid, gender, age, race, name, skin_tone: skinTone || '', hair_color: hairColor || '' });
 }
 
 /**
