@@ -388,7 +388,22 @@ body {
   transform: scale(0.95) !important;
 }
 
+/* --- Avatar Preview --- */
+#avatar-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 20px;
+  width: 160px;
+  height: 160px;
+}
+
 #avatar-preview svg {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+  transition: filter 0.3s ease;
+  border-radius: 50%;
+}
+
+#avatar-preview svg:hover {
+  filter: drop-shadow(0 4px 20px rgba(52, 152, 219, 0.4));
 }

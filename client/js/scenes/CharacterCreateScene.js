@@ -1,68 +1,30 @@
 /**
  * CharacterCreateScene - Avatar customization with visual preview
  * Lets players customize skin tone, hair color, name, gender, and age.
- * Avatar dynamically reflects gender selection via DiceBear API.
+ * Uses Canvas palette-swap on AI-generated base images with marker colors.
  */
 class CharacterCreateScene extends Phaser.Scene {
   constructor() {
     super({ key: 'CharacterCreateScene' });
     this.selectedSkinTone = '#FDEBD3';
     this.selectedHairColor = '#2C1810';
-    this.selectedGender = 'female'; // default avatar style
+    this.selectedGender = 'female';
   }
 
-  create() {
+  async create() {
     const { width, height } = this.cameras.main;
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
+
+    if (!AvatarRenderer.isReady()) {
+      await AvatarRenderer.preload();
+    }
     this.createCharacterForm();
   }
 
-  /**
-   * Get the DiceBear avatar URL based on gender, skin tone and hair color.
-   * Female uses seed=Mason, Male uses seed=Eliza.
-   * Passes skinColor and hairColor params to reflect user selections.
-   */
-  getAvatarUrl() {
-    const seed = this.selectedGender === 'male' ? 'Eliza' : 'Mason';
-    // Strip '#' prefix for DiceBear hex color params
-    const skinHex = this.selectedSkinTone.replace('#', '');
-    const hairHex = this.selectedHairColor.replace('#', '');
-    return `https://api.dicebear.com/9.x/toon-head/svg?flip=true&radius=50&seed=${seed}&skinColor=${skinHex}&hair=${hairHex}`;
-  }
-
-  /**
-   * Get fallback emoji based on gender
-   */
-  getFallbackEmoji() {
-    return this.selectedGender === 'male' ? '👨' : '👩';
-  }
-
-  /**
-   * Build the avatar HTML - an img tag with DiceBear URL and emoji fallback
-   */
   buildAvatarHTML() {
-    const url = this.getAvatarUrl();
-    const emoji = this.getFallbackEmoji();
-    return `
-      <img
-        id="avatar-img"
-        src="${url}"
-        alt="Avatar"
-        style="width: 140px; height: 140px; border-radius: 50%; background: #2a2a4a; object-fit: cover;"
-        onerror="this.style.display='none'; document.getElementById('avatar-emoji-fallback').style.display='flex';"
-        onload="this.style.display='block'; document.getElementById('avatar-emoji-fallback').style.display='none';"
-      />
-      <div
-        id="avatar-emoji-fallback"
-        style="display: none; width: 140px; height: 140px; border-radius: 50%; background: #2a2a4a;
-               justify-content: center; align-items: center; font-size: 72px; user-select: none;"
-      >${emoji}</div>
-    `;
+    return AvatarRenderer.renderAsHTML(this.selectedGender, this.selectedSkinTone, this.selectedHairColor);
   }
 
-  /**
-   * Refresh the avatar preview in the DOM
-   */
   refreshAvatar() {
     const el = document.getElementById('avatar-preview');
     if (el) {
@@ -116,11 +78,7 @@ class CharacterCreateScene extends Phaser.Scene {
         </p>
 
         <!-- Avatar Preview -->
-        <div id="avatar-preview" style="
-          display: flex; justify-content: center; align-items: center;
-          margin: 0 auto 20px;
-          width: 160px; height: 160px;
-        ">
+        <div id="avatar-preview">
           ${this.buildAvatarHTML()}
         </div>
 
