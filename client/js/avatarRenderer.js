@@ -33,6 +33,12 @@ const AvatarRenderer = (() => {
   const BASE_HAIR_S = 80;
   const BASE_HAIR_L = 55;
 
+  // Per-gender source crop (fraction of original image) to normalize character size
+  const CROP = {
+    female: { x: 0.10, y: 0.06, w: 0.80, h: 0.88 },
+    male:   { x: 0,    y: 0,    w: 1,    h: 1    },
+  };
+
   const store = {};  // { female: { img, skinMask, hairMask }, male: { ... } }
   const cache = new Map();
   let canvas, ctx, maskCanvas, maskCtx;
@@ -102,11 +108,20 @@ const AvatarRenderer = (() => {
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
+  // --- Draw with per-gender crop ---
+
+  function drawWithCrop(context, img, crop) {
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const sx = crop.x * iw, sy = crop.y * ih;
+    const sw = crop.w * iw, sh = crop.h * ih;
+    context.drawImage(img, sx, sy, sw, sh, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  }
+
   // --- Mask computation (runs once per base image at preload) ---
 
-  function computeMasks(img) {
+  function computeMasks(img, crop) {
     maskCtx.clearRect(0, 0, AVATAR_SIZE, AVATAR_SIZE);
-    maskCtx.drawImage(img, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+    drawWithCrop(maskCtx, img, crop);
     const data = maskCtx.getImageData(0, 0, AVATAR_SIZE, AVATAR_SIZE).data;
     const pixelCount = AVATAR_SIZE * AVATAR_SIZE;
     const skinMask = new Uint8Array(pixelCount);
@@ -148,20 +163,20 @@ const AvatarRenderer = (() => {
       loadImage('assets/avatars/male_base.png'),
     ]);
 
-    const femaleMasks = computeMasks(femaleImg);
-    const maleMasks = computeMasks(maleImg);
+    const femaleMasks = computeMasks(femaleImg, CROP.female);
+    const maleMasks = computeMasks(maleImg, CROP.male);
 
-    store.female = { img: femaleImg, ...femaleMasks };
-    store.male = { img: maleImg, ...maleMasks };
+    store.female = { img: femaleImg, crop: CROP.female, ...femaleMasks };
+    store.male = { img: maleImg, crop: CROP.male, ...maleMasks };
   }
 
   // --- Core palette swap (mask-guided) ---
 
   function paletteSwap(entry, targetSkinHex, targetHairHex) {
-    const { img, skinMask, hairMask } = entry;
+    const { img, crop, skinMask, hairMask } = entry;
 
     ctx.clearRect(0, 0, AVATAR_SIZE, AVATAR_SIZE);
-    ctx.drawImage(img, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+    drawWithCrop(ctx, img, crop);
     const imageData = ctx.getImageData(0, 0, AVATAR_SIZE, AVATAR_SIZE);
     const data = imageData.data;
 
