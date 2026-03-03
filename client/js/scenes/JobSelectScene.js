@@ -1,6 +1,6 @@
 /**
- * JobSelectScene - Starting funds, current housing, then job selection
- * Shows intro pages before player chooses one of three jobs.
+ * JobSelectScene - Job selection
+ * Player chooses one of three jobs.
  */
 class JobSelectScene extends Phaser.Scene {
   constructor() {
@@ -11,89 +11,7 @@ class JobSelectScene extends Phaser.Scene {
     const { width, height } = this.cameras.main;
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
 
-    this.showStartingFunds();
-  }
-
-  showStartingFunds() {
-    const overlay = document.getElementById('ui-overlay');
-    const balance = GameState.balance;
-    const salary = GameState.config.monthlyBaseSalary;
-
-    overlay.innerHTML = '';
-    const container = document.createElement('div');
-    container.className = 'modal-backdrop';
-    container.innerHTML = `
-      <div class="modal-content" style="max-width: 480px; text-align: center;">
-        <h2>💰 Your Starting Funds</h2>
-        <p style="color: #95a5a6; margin-bottom: 20px; font-size: 14px;">
-          You've arrived in Valrenta City with some savings.
-        </p>
-
-        <div style="background: #0f3460; border-radius: 12px; padding: 24px; margin: 20px 0;">
-          <p style="color: #bdc3c7; font-size: 14px; margin-bottom: 8px;">Current Balance</p>
-          <p style="color: #2ecc71; font-size: 36px; font-weight: bold;">$${balance.toLocaleString()}</p>
-        </div>
-
-        <div style="background: #16213e; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: left;">
-          <p style="color: #f39c12; font-size: 14px; margin-bottom: 8px;">📋 Salary Info:</p>
-          <p style="color: #bdc3c7; font-size: 13px;">Monthly base salary: <strong style="color:#2ecc71;">$${salary.toLocaleString()}</strong></p>
-          <p style="color: #bdc3c7; font-size: 13px; margin-top: 4px;">Performance bonuses and deductions may apply.</p>
-        </div>
-
-        <p style="color: #e74c3c; font-size: 13px; margin: 16px 0;">
-          🏠 Remember: Your long-term goal is to buy a home in this city within 10–20 years!
-        </p>
-
-        <button class="btn btn-primary" id="funds-continue" style="width: 100%; padding: 12px; margin-top: 8px;">
-          Continue →
-        </button>
-      </div>
-    `;
-
-    overlay.appendChild(container);
-
-    document.getElementById('funds-continue').addEventListener('click', () => {
-      overlay.innerHTML = '';
-      this.showCurrentHousing();
-    });
-  }
-
-  showCurrentHousing() {
-    const overlay = document.getElementById('ui-overlay');
-    overlay.innerHTML = '';
-
-    const container = document.createElement('div');
-    container.className = 'modal-backdrop';
-    container.innerHTML = `
-      <div class="modal-content" style="max-width: 500px;">
-        <h2>🏠 Your Current Housing</h2>
-        <div style="background: #0f3460; border-radius: 8px; padding: 16px; margin: 16px 0;">
-          <p style="color: #e74c3c; font-size: 14px; margin-bottom: 8px;">📍 Rented Apartment — 20m² Studio</p>
-          <p style="color: #bdc3c7; font-size: 13px; line-height: 1.6;">
-            You're currently renting a small one-room apartment (about 20 sqm) with a basic bathroom.
-            The quality is average — there are occasional maintenance issues like pest problems.
-            This is a temporary arrangement.
-          </p>
-        </div>
-        <div style="background: #16213e; border-radius: 8px; padding: 16px; margin: 16px 0;">
-          <p style="color: #f39c12; font-size: 14px; margin-bottom: 8px;">🎯 Your Long-Term Goal</p>
-          <p style="color: #bdc3c7; font-size: 13px; line-height: 1.6;">
-            Save up and <strong style="color:#2ecc71;">buy your own home</strong> in Valrenta City within the next 10–20 years.
-            Work hard, manage your finances, and plan for the future!
-          </p>
-        </div>
-        <button class="btn btn-primary" id="housing-continue" style="width: 100%; padding: 12px; margin-top: 8px;">
-          Choose a Job →
-        </button>
-      </div>
-    `;
-
-    overlay.appendChild(container);
-
-    document.getElementById('housing-continue').addEventListener('click', () => {
-      overlay.innerHTML = '';
-      this.createJobSelectionUI();
-    });
+    this.createJobSelectionUI();
   }
 
   createJobSelectionUI() {
@@ -113,23 +31,23 @@ class JobSelectScene extends Phaser.Scene {
           <div class="card job-card" data-job="restaurant">
             <div style="font-size: 36px; margin-bottom: 10px;">🍽️</div>
             <h4>Restaurant Worker</h4>
-            <p>Work at a busy restaurant washing dishes and keeping the kitchen clean.</p>
+            <p>Wash dishes at a busy restaurant</p>
           </div>
           <div class="card job-card" data-job="computer">
             <div style="font-size: 36px; margin-bottom: 10px;">🖥️</div>
             <h4>Computer Operator</h4>
-            <p>Monitor and check department computer systems for errors and issues.</p>
+            <p>Maintain department computer systems</p>
           </div>
           <div class="card job-card" data-job="finance">
             <div style="font-size: 36px; margin-bottom: 10px;">📊</div>
             <h4>Financial Clerk</h4>
-            <p>Fill in SKU profit sheets and maintain financial records for the company.</p>
+            <p>Complete company product profit sheets</p>
           </div>
         </div>
 
         <div style="text-align: center; margin-top: 24px;">
           <button class="btn btn-primary" id="job-submit" disabled style="width: 100%; padding: 12px; opacity: 0.5;">
-            Select a job to continue
+            Select a Job to continue
           </button>
         </div>
       </div>
@@ -168,11 +86,78 @@ class JobSelectScene extends Phaser.Scene {
       GameState.jobType = jobType;
 
       document.getElementById('ui-overlay').innerHTML = '';
-      this.scene.start('CityScene');
+      this.showJobOverview(jobType);
     } catch (error) {
       btn.disabled = false;
       btn.textContent = 'Continue →';
       console.error('Failed to save job:', error);
     }
+  }
+
+  showJobOverview(jobType) {
+    const cfg = GameState.config;
+    const salary = cfg.monthlyBaseSalary;
+    const requiredUnits = cfg.bonusThreshold;
+    const totalClicks = requiredUnits * cfg.clicksPerTaskUnit;
+    const penalty = cfg.penaltyPerUnit;
+    const bonus = cfg.bonusPerUnit;
+
+    const jobFlavor = {
+      restaurant: { unit: 'dishes', verb: 'right-click the mouse' },
+      computer:   { unit: 'system checks', verb: 'right-click the mouse' },
+      finance:    { unit: 'profit sheets', verb: 'right-click the mouse' },
+    };
+    const flavor = jobFlavor[jobType] || jobFlavor.restaurant;
+    const totalWork = requiredUnits * cfg.clicksPerTaskUnit * 10;
+
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 520px; padding: 28px 32px; text-align: left;">
+        <h2 style="text-align: center; color: #3498db; margin-bottom: 24px; font-style: italic;">Job Overview: Your Tasks</h2>
+
+        <div style="color: #bdc3c7; font-size: 14px; line-height: 1.9;">
+          <p style="margin-bottom: 14px;">
+            <strong style="color: #ecf0f1;">● Task:</strong><br>
+            <span style="padding-left: 16px;">- Continuously <span style="color: #f39c12; text-decoration: underline;">${flavor.verb}</span> 🖱️ to complete work units.</span><br>
+            <span style="padding-left: 16px;">- A progress bar will show your progress in real time.</span>
+          </p>
+
+          <p style="margin-bottom: 10px;">
+            <strong style="color: #ecf0f1;">● Required work amount:</strong>
+            ${totalWork} ${flavor.unit} (${totalClicks} clicks) / month
+          </p>
+
+          <p style="margin-bottom: 10px;">
+            <strong style="color: #ecf0f1;">● Base payment:</strong>
+            <span style="color: #f39c12;">$${salary.toLocaleString()}</span> / month
+          </p>
+
+          <p style="margin-bottom: 10px;">
+            <strong style="color: #ecf0f1;">● Penalty:</strong>
+            <span style="color: #e74c3c;">-$${penalty}</span> for each unfinished work unit
+          </p>
+
+          <p style="margin-bottom: 6px;">
+            <strong style="color: #ecf0f1;">● Bonus:</strong>
+            <span style="color: #2ecc71;">+$${bonus}</span> for each additional work unit completed
+          </p>
+        </div>
+
+        <button class="btn btn-primary" id="overview-start" style="width: 100%; padding: 14px; margin-top: 24px; font-size: 16px; font-weight: bold;">
+          Start working!
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('overview-start').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      this.scene.start('CityScene');
+    });
   }
 }

@@ -47,7 +47,193 @@ class CityScene extends Phaser.Scene {
     // Record month start time
     GameState.monthStartTime = Date.now();
 
-    this.showMonthStart(() => this.startWork());
+    if (GameState.currentMonth === 1 && !GameState.jobType) {
+      this.showIntroStep1();
+    } else {
+      this.showMonthStart(() => this.startWork());
+    }
+  }
+
+  showIntroStep1() {
+    this.showCurrentState(() => this.showIntroStep2());
+  }
+
+  showIntroStep2() {
+    this.showCurrentHousing(
+      () => this.showIntroStep1(),
+      () => this.showIntroStep3()
+    );
+  }
+
+  showIntroStep3() {
+    this.showNextMonths(
+      () => this.showIntroStep2(),
+      () => this.scene.start('JobSelectScene')
+    );
+  }
+
+  showCurrentState(callback) {
+    const balance = GameState.balance;
+    const age = GameState.character && GameState.character.age;
+
+    let backstory = 'left your previous job';
+    if (age === '18-24') {
+      backstory = 'graduated from school';
+    } else if (age === '25-34') {
+      backstory = 'left your previous job to seek new opportunities';
+    } else if (age === '35-44') {
+      backstory = 'decided to start fresh after years of working';
+    } else if (age === '45-54') {
+      backstory = 'taken a bold step to relocate for a better life';
+    } else if (age === '55+') {
+      backstory = 'chosen to begin a new chapter in your life';
+    }
+
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 500px; text-align: left; padding: 32px 36px;">
+        <h2 style="text-align: center; color: #f39c12; margin-bottom: 24px;">Your Current State</h2>
+
+        <p style="color: #ecf0f1; font-size: 15px; font-weight: bold; margin-bottom: 16px;">
+          Welcome to Valrenta!
+        </p>
+
+        <p style="color: #bdc3c7; font-size: 14px; line-height: 1.7; margin-bottom: 24px;">
+          You've just ${backstory}, and are about to
+          <span style="color: #3498db; text-decoration: underline;">start a new life here in the city of Valrenta</span>.
+        </p>
+
+        <p style="color: #bdc3c7; font-size: 14px; margin-bottom: 8px;">
+          Your starting funds (previous savings):
+          <span style="color: #f39c12; font-weight: bold; font-size: 16px;">$ ${balance.toLocaleString()}</span>
+        </p>
+
+        <button class="btn btn-primary" id="current-state-next" style="width: 100%; padding: 14px; margin-top: 24px; font-size: 16px;">
+          Next
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('current-state-next').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      callback();
+    });
+  }
+
+  showCurrentHousing(onPrevious, onNext) {
+    const cfg = GameState.config;
+    const monthlyRent = Math.round(cfg.monthlyBaseSalary * cfg.livingExpenseRatio * cfg.livingExpenseBreakdown.rent);
+
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 520px; padding: 28px 32px;">
+        <h2 style="text-align: center; color: #f39c12; margin-bottom: 20px;">🏠 Your Current Housing State</h2>
+
+        <div style="text-align: left; margin-bottom: 16px;">
+          <p style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-bottom: 12px;">
+            - You do <span style="text-decoration: underline;">NOT</span> own any property.
+          </p>
+
+          <p style="color: #bdc3c7; font-size: 14px; margin-bottom: 6px;">- You currently live in a small rented basement</p>
+          <div style="padding-left: 18px; margin-bottom: 4px;">
+            <p style="color: #bdc3c7; font-size: 13px; line-height: 1.8;">
+              - Area: 18 m²<br>
+              - Monthly rent: <strong style="color: #f39c12;">$${monthlyRent}</strong><br>
+              - Housing condition: <strong style="color: #e74c3c;">poor</strong>
+            </p>
+          </div>
+        </div>
+
+        <div style="
+          background: linear-gradient(135deg, #2d1b4e 0%, #1a1a3e 50%, #1c2a3a 100%);
+          border-radius: 8px;
+          padding: 16px;
+          margin: 12px 0 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 120px;
+          position: relative;
+          overflow: hidden;
+        ">
+          <div style="text-align: center; font-size: 48px; line-height: 1.4; letter-spacing: 4px; opacity: 0.9;">
+            🪣🧹🛏️<br>🚿🪳💡
+          </div>
+          <div style="position: absolute; bottom: 6px; right: 10px; font-size: 10px; color: #7f8c8d;">
+            Your small rented basement
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" id="housing-prev" style="flex: 1; padding: 14px; font-size: 15px; background: #34495e;">
+            Previous
+          </button>
+          <button class="btn btn-primary" id="housing-next" style="flex: 1; padding: 14px; font-size: 15px;">
+            Next
+          </button>
+        </div>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('housing-prev').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      onPrevious();
+    });
+
+    document.getElementById('housing-next').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      onNext();
+    });
+  }
+
+  showNextMonths(onPrevious, onNext) {
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 500px; padding: 32px 36px;">
+        <h2 style="text-align: center; color: #3498db; margin-bottom: 24px;">Over the next few months...</h2>
+
+        <p style="color: #ecf0f1; font-size: 16px; font-weight: bold; line-height: 1.8; margin-bottom: 28px;">
+          You will find a job, work, and get paid monthly, eventually saving up to build your life here.
+        </p>
+
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" id="months-prev" style="flex: 1; padding: 14px; font-size: 15px; background: #34495e;">
+            Previous
+          </button>
+          <button class="btn btn-primary" id="months-next" style="flex: 1.4; padding: 14px; font-size: 14px;">
+            Got it.<br>Start finding a job!
+          </button>
+        </div>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('months-prev').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      onPrevious();
+    });
+
+    document.getElementById('months-next').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      onNext();
+    });
   }
 
   drawCityBackground(width, height) {
