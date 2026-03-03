@@ -47,13 +47,7 @@ class CityScene extends Phaser.Scene {
     // Record month start time
     GameState.monthStartTime = Date.now();
 
-    // Show rental reminder on first month or every month
-    if (month === 1) {
-      this.showRentalReminder(() => this.startWork());
-    } else {
-      // Brief month transition then start work
-      this.showMonthStart(() => this.startWork());
-    }
+    this.showMonthStart(() => this.startWork());
   }
 
   drawCityBackground(width, height) {
@@ -145,44 +139,6 @@ class CityScene extends Phaser.Scene {
         }
       });
     }
-  }
-
-  showRentalReminder(callback) {
-    const overlay = document.getElementById('ui-overlay');
-    overlay.innerHTML = '';
-
-    const container = document.createElement('div');
-    container.className = 'modal-backdrop';
-    container.innerHTML = `
-      <div class="modal-content" style="max-width: 500px;">
-        <h2>🏠 Your Current Housing</h2>
-        <div style="background: #0f3460; border-radius: 8px; padding: 16px; margin: 16px 0;">
-          <p style="color: #e74c3c; font-size: 14px; margin-bottom: 8px;">📍 Rented Apartment — 20m² Studio</p>
-          <p style="color: #bdc3c7; font-size: 13px; line-height: 1.6;">
-            You're currently renting a small one-room apartment (about 20 sqm) with a basic bathroom.
-            The quality is average — there are occasional maintenance issues like pest problems.
-            This is a temporary arrangement.
-          </p>
-        </div>
-        <div style="background: #16213e; border-radius: 8px; padding: 16px; margin: 16px 0;">
-          <p style="color: #f39c12; font-size: 14px; margin-bottom: 8px;">🎯 Your Long-Term Goal</p>
-          <p style="color: #bdc3c7; font-size: 13px; line-height: 1.6;">
-            Save up and <strong style="color:#2ecc71;">buy your own home</strong> in Valrenta City within the next 10–20 years.
-            Work hard, manage your finances, and plan for the future!
-          </p>
-        </div>
-        <button class="btn btn-primary" id="rental-ok" style="width: 100%; padding: 12px; margin-top: 8px;">
-          Got it — Let's start working! →
-        </button>
-      </div>
-    `;
-
-    overlay.appendChild(container);
-
-    document.getElementById('rental-ok').addEventListener('click', () => {
-      overlay.innerHTML = '';
-      callback();
-    });
   }
 
   showMonthStart(callback) {
