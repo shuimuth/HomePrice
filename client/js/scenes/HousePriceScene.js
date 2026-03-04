@@ -154,8 +154,8 @@ class HousePriceScene extends Phaser.Scene {
 
     // ===== BOTTOM SECTION: Buildings with prices =====
     const groundY = height - 22;
-    const buildingAreaTop = 145;
-    const maxBuildingH = groundY - buildingAreaTop - 50;
+    const buildingAreaTop = 135;
+    const maxBuildingH = groundY - buildingAreaTop - 40;
     const minBuildingH = 60;
 
     const prices = this.areaPrices.map(a => a.price);
@@ -165,12 +165,14 @@ class HousePriceScene extends Phaser.Scene {
     // Hybrid height scaling:
     // - Log of average price determines overall building height level (absolute)
     // - Within-group relative scaling preserves visible differences between areas
+    // Reference range tuned to game's actual price levels (LHP ~$18K, HHP ~$180K)
     const priceAvg = prices.reduce((a, b) => a + b, 0) / prices.length;
     const logAvg = Math.log10(Math.max(priceAvg, 1000));
-    const logCeil = Math.log10(5000000);
-    const logFloor = Math.log10(500);
-    const overallScale = Math.max(0.15, Math.min(1, (logAvg - logFloor) / (logCeil - logFloor)));
+    const logCeil = Math.log10(400000);
+    const logFloor = Math.log10(2000);
+    const overallScale = Math.max(0.30, Math.min(1, (logAvg - logFloor) / (logCeil - logFloor)));
     const effectiveMaxH = minBuildingH + overallScale * (maxBuildingH - minBuildingH);
+    const effectiveMinH = Math.max(50, effectiveMaxH * 0.65);
 
     const numBuildings = this.areaPrices.length;
     const totalGap = 12;
@@ -192,7 +194,7 @@ class HousePriceScene extends Phaser.Scene {
 
     this.areaPrices.forEach((area, i) => {
       const relRatio = maxPrice > minPrice ? (area.price - minPrice) / (maxPrice - minPrice) : 0.5;
-      const bH = minBuildingH + relRatio * (effectiveMaxH - minBuildingH);
+      const bH = effectiveMinH + relRatio * (effectiveMaxH - effectiveMinH);
       const bx = startX + i * (buildingW + totalGap);
       const by = groundY - bH;
       const centerX = bx + buildingW / 2;
