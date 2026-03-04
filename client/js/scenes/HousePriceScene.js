@@ -96,7 +96,7 @@ class HousePriceScene extends Phaser.Scene {
 
   drawPriceCards(width, height) {
     // ===== TOP SECTION: Title + Summary =====
-    const titleText = this.add.text(width / 2, 18, '🏙️ Valrenta City Housing Market', {
+    const titleText = this.add.text(width / 2, 18, '🏙️ Valrenta City-Housing Market', {
       fontSize: '18px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#3498db',
@@ -108,32 +108,43 @@ class HousePriceScene extends Phaser.Scene {
       color: '#95a5a6',
     }).setOrigin(0.5).setAlpha(0);
 
-    // Average price summary
     const avgPrice = this.areaPrices.reduce((s, a) => s + a.price, 0) / this.areaPrices.length;
-    const salary = GameState.config.monthlyBaseSalary;
-    const yearsToSave = (avgPrice / salary / 12).toFixed(1);
+
+    // Two side-by-side info boxes
+    const panelX = 60;
+    const panelY = 56;
+    const panelW = width - 120;
+    const panelH = 70;
 
     const summaryBg = this.add.graphics();
     summaryBg.fillStyle(0x0a1a35, 0.9);
-    summaryBg.fillRoundedRect(60, 56, width - 120, 70, 10);
+    summaryBg.fillRoundedRect(panelX, panelY, panelW, panelH, 10);
     summaryBg.lineStyle(1, 0x3498db, 0.3);
-    summaryBg.strokeRoundedRect(60, 56, width - 120, 70, 10);
+    summaryBg.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
+    summaryBg.lineStyle(1, 0x3498db, 0.15);
+    summaryBg.lineBetween(width / 2, panelY + 12, width / 2, panelY + panelH - 12);
 
-    const avgLabel = this.add.text(width / 2, 70, 'City Average House Price', {
+    const leftCX = panelX + panelW / 4;
+    const avgLabel = this.add.text(leftCX, panelY + 16, 'Average Home Price', {
       fontSize: '11px', color: '#95a5a6',
     }).setOrigin(0.5).setAlpha(0);
 
-    const avgPriceText = this.add.text(width / 2, 90, `$${Math.round(avgPrice).toLocaleString()}`, {
+    const avgPriceText = this.add.text(leftCX, panelY + 44, `$${Math.round(avgPrice).toLocaleString()}`, {
       fontSize: '22px', fontFamily: 'Segoe UI, sans-serif',
       color: '#f39c12', fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0);
 
-    const infoText = this.add.text(width / 2, 112, `≈ ${yearsToSave} years of salary   |   Your Balance: $${GameState.balance.toLocaleString()}`, {
-      fontSize: '10px', color: '#7f8c8d',
+    const rightCX = panelX + (panelW * 3) / 4;
+    const balanceLabel = this.add.text(rightCX, panelY + 16, 'Your balance', {
+      fontSize: '11px', color: '#95a5a6',
     }).setOrigin(0.5).setAlpha(0);
 
-    // Fade in top section
-    const topElements = [titleText, subtitleText, summaryBg, avgLabel, avgPriceText, infoText];
+    const balanceText = this.add.text(rightCX, panelY + 44, `$${GameState.balance.toLocaleString()}`, {
+      fontSize: '22px', fontFamily: 'Segoe UI, sans-serif',
+      color: '#2ecc71', fontStyle: 'bold',
+    }).setOrigin(0.5).setAlpha(0);
+
+    const topElements = [titleText, subtitleText, summaryBg, avgLabel, avgPriceText, balanceLabel, balanceText];
     this.tweens.add({
       targets: topElements,
       alpha: 1,
@@ -142,28 +153,35 @@ class HousePriceScene extends Phaser.Scene {
     });
 
     // ===== BOTTOM SECTION: Buildings with prices =====
-    const groundY = height - 22; // top of road
-    const buildingAreaTop = 145;  // where building labels can start
-    const maxBuildingH = groundY - buildingAreaTop - 50; // max building pixel height (reserve space for labels)
+    const groundY = height - 22;
+    const buildingAreaTop = 145;
+    const maxBuildingH = groundY - buildingAreaTop - 50;
     const minBuildingH = 60;
 
     const prices = this.areaPrices.map(a => a.price);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
 
-    // Building layout: 8 buildings evenly spaced
+    // Hybrid height scaling:
+    // - Log of average price determines overall building height level (absolute)
+    // - Within-group relative scaling preserves visible differences between areas
+    const priceAvg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const logAvg = Math.log10(Math.max(priceAvg, 1000));
+    const logCeil = Math.log10(5000000);
+    const logFloor = Math.log10(500);
+    const overallScale = Math.max(0.15, Math.min(1, (logAvg - logFloor) / (logCeil - logFloor)));
+    const effectiveMaxH = minBuildingH + overallScale * (maxBuildingH - minBuildingH);
+
     const numBuildings = this.areaPrices.length;
-    const totalGap = 12; // gap between buildings
+    const totalGap = 12;
     const buildingW = Math.floor((width - 40 - (numBuildings - 1) * totalGap) / numBuildings);
     const startX = (width - (numBuildings * buildingW + (numBuildings - 1) * totalGap)) / 2;
 
-    // Building colors (darker variations)
     const buildingColors = [
       0x1a3a5c, 0x1e3d5e, 0x153050, 0x1c3856,
       0x17335a, 0x1b3654, 0x14304e, 0x193858
     ];
 
-    // Accent/roof colors based on price
     const getAccentColor = (ratio) => {
       if (ratio > 0.7) return { color: 0xe74c3c, hex: '#e74c3c' };
       if (ratio > 0.4) return { color: 0xf39c12, hex: '#f39c12' };
@@ -173,32 +191,27 @@ class HousePriceScene extends Phaser.Scene {
     const icons = ['🏢', '🏬', '🏘️', '🌳', '🚉', '🌆', '🌊', '🏛️'];
 
     this.areaPrices.forEach((area, i) => {
-      const ratio = maxPrice > minPrice ? (area.price - minPrice) / (maxPrice - minPrice) : 0.5;
-      const bH = minBuildingH + ratio * (maxBuildingH - minBuildingH);
+      const relRatio = maxPrice > minPrice ? (area.price - minPrice) / (maxPrice - minPrice) : 0.5;
+      const bH = minBuildingH + relRatio * (effectiveMaxH - minBuildingH);
       const bx = startX + i * (buildingW + totalGap);
       const by = groundY - bH;
       const centerX = bx + buildingW / 2;
-      const accent = getAccentColor(ratio);
+      const accent = getAccentColor(relRatio);
 
-      // Building body (will animate from ground up)
       const bldgGraphics = this.add.graphics();
       bldgGraphics.fillStyle(buildingColors[i % buildingColors.length], 1);
-      bldgGraphics.fillRect(bx, groundY, buildingW, 0); // start with 0 height
+      bldgGraphics.fillRect(bx, groundY, buildingW, 0);
 
-      // Accent roof bar
       const roofG = this.add.graphics();
       roofG.fillStyle(accent.color, 0.9);
       roofG.fillRect(bx, groundY, buildingW, 3);
 
-      // Side shadow for 3D effect
       const shadowG = this.add.graphics();
       shadowG.fillStyle(0x000000, 0.15);
       shadowG.fillRect(bx + buildingW - 6, groundY, 6, 0);
 
-      // Windows (draw after animation)
       const windowG = this.add.graphics();
 
-      // Area name label (above building)
       const nameLabel = this.add.text(centerX, by - 32, area.name, {
         fontSize: '10px',
         fontFamily: 'Segoe UI, sans-serif',
@@ -207,12 +220,10 @@ class HousePriceScene extends Phaser.Scene {
         align: 'center',
       }).setOrigin(0.5).setAlpha(0);
 
-      // Icon above name
       const iconText = this.add.text(centerX, by - 48, icons[i], {
         fontSize: '16px',
       }).setOrigin(0.5).setAlpha(0);
 
-      // Price label
       const priceLabel = this.add.text(centerX, by - 16, `$${area.price.toLocaleString()}`, {
         fontSize: '11px',
         fontFamily: 'Segoe UI, sans-serif',
@@ -221,10 +232,7 @@ class HousePriceScene extends Phaser.Scene {
         align: 'center',
       }).setOrigin(0.5).setAlpha(0);
 
-      // Animate building growing from ground
       const animDelay = 300 + i * 150;
-
-      // Use a tween on a dummy value to progressively redraw
       const dummy = { progress: 0 };
       this.tweens.add({
         targets: dummy,
@@ -236,23 +244,19 @@ class HousePriceScene extends Phaser.Scene {
           const currentH = bH * dummy.progress;
           const currentY = groundY - currentH;
 
-          // Redraw building body
           bldgGraphics.clear();
           bldgGraphics.fillStyle(buildingColors[i % buildingColors.length], 1);
           bldgGraphics.fillRect(bx, currentY, buildingW, currentH);
 
-          // Redraw roof accent
           roofG.clear();
           roofG.fillStyle(accent.color, 0.9);
           roofG.fillRect(bx, currentY, buildingW, 3);
 
-          // Redraw shadow
           shadowG.clear();
           shadowG.fillStyle(0x000000, 0.15);
           shadowG.fillRect(bx + buildingW - 6, currentY, 6, currentH);
         },
         onComplete: () => {
-          // Draw windows after building is fully grown
           const winCols = Math.max(1, Math.floor((buildingW - 10) / 12));
           const winRows = Math.max(1, Math.floor((bH - 10) / 16));
           const winW = 5;
@@ -276,7 +280,6 @@ class HousePriceScene extends Phaser.Scene {
             }
           }
 
-          // Fade in labels after building completes
           this.tweens.add({
             targets: [nameLabel, iconText, priceLabel],
             alpha: 1,
@@ -288,37 +291,39 @@ class HousePriceScene extends Phaser.Scene {
       });
     });
 
-    // ===== Continue button =====
+    // ===== Continue button (bottom right) =====
     const btnDelay = 300 + this.areaPrices.length * 150 + 900;
-    const btnY = 138;
+    const btnW = 140;
+    const btnH = 32;
+    const btnX = width - btnW - 24;
+    const btnY = height - 52;
     const btnBg = this.add.graphics();
     btnBg.fillStyle(0x3498db, 1);
-    btnBg.fillRoundedRect(width / 2 - 80, btnY - 15, 160, 30, 6);
+    btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
 
-    const btnText = this.add.text(width / 2, btnY, 'Continue →', {
+    const btnText = this.add.text(btnX + btnW / 2, btnY + btnH / 2, 'Continue →', {
       fontSize: '13px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#ffffff',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    const btnZone = this.add.zone(width / 2, btnY, 160, 30).setInteractive({ useHandCursor: true });
+    const btnZone = this.add.zone(btnX + btnW / 2, btnY + btnH / 2, btnW, btnH).setInteractive({ useHandCursor: true });
 
     btnZone.on('pointerover', () => {
       btnBg.clear();
       btnBg.fillStyle(0x2980b9, 1);
-      btnBg.fillRoundedRect(width / 2 - 80, btnY - 15, 160, 30, 6);
+      btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
     });
     btnZone.on('pointerout', () => {
       btnBg.clear();
       btnBg.fillStyle(0x3498db, 1);
-      btnBg.fillRoundedRect(width / 2 - 80, btnY - 15, 160, 30, 6);
+      btnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
     });
     btnZone.on('pointerdown', () => {
       this.showHousePriceSummary();
     });
 
-    // Button fade-in
     [btnBg, btnText, btnZone].forEach(obj => obj.setAlpha(0));
     this.tweens.add({
       targets: [btnBg, btnText, btnZone],
