@@ -38,13 +38,21 @@ class MapScene extends Phaser.Scene {
 
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
+    // Prompt — compact key-hint style
+    this.promptBg = this.add.graphics().setDepth(40000).setVisible(false);
     this.promptText = this.add.text(0, 0, '', {
-      fontSize: '14px',
+      fontSize: '11px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#ffffff',
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      padding: { x: 10, y: 6 },
-    }).setOrigin(0.5).setDepth(40000).setVisible(false);
+    }).setOrigin(0.5).setDepth(40001).setVisible(false);
+    this.promptKey = this.add.text(0, 0, 'E', {
+      fontSize: '10px',
+      fontFamily: 'Segoe UI, sans-serif',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      backgroundColor: '#3498db',
+      padding: { x: 4, y: 2 },
+    }).setOrigin(0.5).setDepth(40001).setVisible(false);
 
     this.events.on('resume', () => {
       this.isInsideHouse = false;
@@ -1018,34 +1026,33 @@ class MapScene extends Phaser.Scene {
         sideG.fillRect(bx - 4, by + 4, 4, def.h - 4);
       }
 
-      // --- Area label (high depth so trees never cover it) ---
+      // --- Combined info card above house ---
       const labelDepth = 30000;
-      const labelBg = this.add.graphics().setDepth(labelDepth);
-      const labelY = by - (def.tier === 'high' ? 34 : def.tier === 'mid' ? 30 : 22);
-      labelBg.fillStyle(0x000000, 0.5);
-      labelBg.fillRoundedRect(def.x - 50, labelY - 8, 100, 18, 4);
+      const cardH = 30;
+      const cardW = 110;
+      const cardY = by - (def.tier === 'high' ? 38 : def.tier === 'mid' ? 34 : 26);
+      const cardX = def.x - cardW / 2;
 
-      this.add.text(def.x, labelY, `${def.icon} ${areaData.name}`, {
-        fontSize: '12px',
+      const cardBg = this.add.graphics().setDepth(labelDepth);
+      cardBg.fillStyle(0x1a1a2e, 0.75);
+      cardBg.fillRoundedRect(cardX, cardY - cardH / 2, cardW, cardH, 6);
+      cardBg.lineStyle(1, 0xffffff, 0.15);
+      cardBg.strokeRoundedRect(cardX, cardY - cardH / 2, cardW, cardH, 6);
+      // Small triangle pointer
+      cardBg.fillStyle(0x1a1a2e, 0.75);
+      cardBg.fillTriangle(def.x - 5, cardY + cardH / 2, def.x + 5, cardY + cardH / 2, def.x, cardY + cardH / 2 + 5);
+
+      this.add.text(def.x, cardY - 4, `${def.icon} ${areaData.name}`, {
+        fontSize: '11px',
         fontFamily: 'Segoe UI, sans-serif',
         color: '#ffffff',
         fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 2,
       }).setOrigin(0.5).setDepth(labelDepth + 1);
 
-      // --- Price tag (high depth so trees never cover it) ---
-      const priceBg = this.add.graphics().setDepth(labelDepth);
-      priceBg.fillStyle(0x000000, 0.4);
-      priceBg.fillRoundedRect(def.x - 40, doorY + steps * 3 + 8, 80, 16, 3);
-
-      this.add.text(def.x, doorY + steps * 3 + 16, `$${areaData.price.toLocaleString()}`, {
-        fontSize: '11px',
+      this.add.text(def.x, cardY + 8, `$${areaData.price.toLocaleString()}`, {
+        fontSize: '10px',
         fontFamily: 'Segoe UI, sans-serif',
         color: '#FFD54F',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 2,
       }).setOrigin(0.5).setDepth(labelDepth + 1);
 
       // --- Trigger zone ---
@@ -1069,35 +1076,116 @@ class MapScene extends Phaser.Scene {
     const startY = worldH / 2;
     const skinColor = this.getSkinColorHex();
     const hairColor = this.getHairColorHex();
+    const shirtColor = 0x3498db;
+    const pantsColor = 0x2c3e50;
+    const shoeColor = 0x1a1a2e;
 
-    // Player container as a simple drawn character
     this.player = this.add.container(startX, startY).setDepth(10000);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
     this.player.body.setSize(20, 20);
     this.player.body.setOffset(-10, -10);
 
-    // Body
-    const bodyRect = this.add.rectangle(0, 4, 14, 18, skinColor).setOrigin(0.5);
-    // Head
-    const head = this.add.circle(0, -10, 9, skinColor);
-    // Hair
-    const hair = this.add.ellipse(0, -15, 20, 10, hairColor);
-    // Eyes
-    const eyeL = this.add.circle(-3, -11, 1.5, 0x000000);
-    const eyeR = this.add.circle(3, -11, 1.5, 0x000000);
-    // Shirt
-    const shirt = this.add.rectangle(0, 6, 14, 14, 0x3498db).setOrigin(0.5);
-    // Legs
-    const legL = this.add.rectangle(-3, 16, 5, 8, 0x2c3e50).setOrigin(0.5);
-    const legR = this.add.rectangle(3, 16, 5, 8, 0x2c3e50).setOrigin(0.5);
+    // Texture dimensions; offset everything so all coords are positive
+    const tw = 28, th = 48;
+    const ox = tw / 2, oy = 24;
+    const g = this.make.graphics({ add: false });
 
-    this.player.add([legL, legR, shirt, bodyRect, head, hair, eyeL, eyeR]);
-    this.playerLegs = { left: legL, right: legR };
+    // --- Shoes ---
+    g.fillStyle(shoeColor, 1);
+    g.fillRoundedRect(ox - 6, oy + 18, 5, 4, 1);
+    g.fillRoundedRect(ox + 1, oy + 18, 5, 4, 1);
+
+    // --- Legs (pants) ---
+    g.fillStyle(pantsColor, 1);
+    g.fillRect(ox - 5, oy + 10, 4, 9);
+    g.fillRect(ox + 1, oy + 10, 4, 9);
+    g.lineStyle(1, 0x000000, 0.1);
+    g.lineBetween(ox - 3, oy + 11, ox - 3, oy + 18);
+    g.lineBetween(ox + 3, oy + 11, ox + 3, oy + 18);
+
+    // --- Torso (shirt) ---
+    g.fillStyle(shirtColor, 1);
+    g.fillRoundedRect(ox - 7, oy - 2, 14, 13, 2);
+    const collarColor = Phaser.Display.Color.IntegerToColor(shirtColor).darken(15).color;
+    g.fillStyle(collarColor, 1);
+    g.fillRect(ox - 4, oy - 2, 8, 2);
+    g.fillStyle(0xffffff, 0.1);
+    g.fillRect(ox - 6, oy - 1, 5, 10);
+
+    // --- Arms ---
+    g.fillStyle(shirtColor, 1);
+    g.fillRoundedRect(ox - 10, oy - 1, 4, 10, 1);
+    g.fillRoundedRect(ox + 6, oy - 1, 4, 10, 1);
+    g.fillStyle(skinColor, 1);
+    g.fillCircle(ox - 8, oy + 10, 2.5);
+    g.fillCircle(ox + 8, oy + 10, 2.5);
+
+    // --- Neck ---
+    g.fillStyle(skinColor, 1);
+    g.fillRect(ox - 2, oy - 6, 4, 5);
+
+    // --- Head ---
+    g.fillStyle(skinColor, 1);
+    g.fillCircle(ox, oy - 12, 9);
+    g.fillCircle(ox - 9, oy - 12, 2.5);
+    g.fillCircle(ox + 9, oy - 12, 2.5);
+
+    // --- Hair ---
+    g.fillStyle(hairColor, 1);
+    g.fillEllipse(ox, oy - 18, 20, 8);
+    g.fillRoundedRect(ox - 10, oy - 19, 20, 8, 3);
+    g.fillStyle(hairColor, 0.8);
+    g.fillRect(ox - 10, oy - 18, 3, 6);
+    g.fillRect(ox + 7, oy - 18, 3, 6);
+
+    // --- Face ---
+    g.fillStyle(0xffffff, 1);
+    g.fillEllipse(ox - 4, oy - 13, 5, 4);
+    g.fillEllipse(ox + 4, oy - 13, 5, 4);
+    g.fillStyle(0x4a3728, 1);
+    g.fillCircle(ox - 4, oy - 13, 1.8);
+    g.fillCircle(ox + 4, oy - 13, 1.8);
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(ox - 4, oy - 13, 0.8);
+    g.fillCircle(ox + 4, oy - 13, 0.8);
+    g.fillStyle(0xffffff, 0.8);
+    g.fillCircle(ox - 3.2, oy - 13.8, 0.6);
+    g.fillCircle(ox + 4.8, oy - 13.8, 0.6);
+    const browColor = Phaser.Display.Color.IntegerToColor(hairColor).darken(20).color;
+    g.lineStyle(1.5, browColor, 0.7);
+    g.lineBetween(ox - 6, oy - 16, ox - 2, oy - 15.5);
+    g.lineBetween(ox + 2, oy - 15.5, ox + 6, oy - 16);
+    const noseColor = Phaser.Display.Color.IntegerToColor(skinColor).darken(10).color;
+    g.fillStyle(noseColor, 0.4);
+    g.fillCircle(ox, oy - 10.5, 1.2);
+    g.lineStyle(1, 0xc0392b, 0.5);
+    g.beginPath();
+    g.arc(ox, oy - 8, 2.5, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160));
+    g.strokePath();
+
+    g.generateTexture('player_char', tw, th);
+    g.destroy();
+
+    const charSprite = this.add.image(0, 0, 'player_char').setOrigin(0.5);
+
+    // Green indicator arrow
+    const arrow = this.add.graphics();
+    arrow.fillStyle(0x2ecc71, 0.8);
+    arrow.fillTriangle(0, -28, -4, -23, 4, -23);
+    this.tweens.add({
+      targets: arrow,
+      y: -2,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.player.add([charSprite, arrow]);
     this.walkTween = null;
 
-    // Shadow
-    this.playerShadow = this.add.ellipse(startX, startY + 22, 20, 8, 0x000000, 0.25).setDepth(9999);
+    this.playerShadow = this.add.ellipse(startX, startY + 18, 18, 7, 0x000000, 0.2).setDepth(9999);
   }
 
   getSkinColorHex() {
@@ -1304,14 +1392,14 @@ class MapScene extends Phaser.Scene {
     const salary = GameState.config.monthlyBaseSalary;
 
     const typeMap = {
-      downtown:   { type: 'Luxury High-Rise Apartment', sqft: '1800 - 2500 sq ft' },
-      midtown:    { type: 'Modern Apartment',           sqft: '1200 - 1600 sq ft' },
-      eastside:   { type: 'Townhouse',                  sqft: '1400 - 1800 sq ft' },
-      westpark:   { type: 'Garden Villa',               sqft: '1500 - 2000 sq ft' },
-      northgate:  { type: 'Classic Apartment',          sqft: '800 - 1100 sq ft' },
-      southview:  { type: 'Compact Studio',             sqft: '500 - 800 sq ft' },
-      lakefront:  { type: 'Lakeside Villa',             sqft: '2000 - 2800 sq ft' },
-      oldquarter: { type: 'Heritage Cottage',           sqft: '600 - 900 sq ft' },
+      downtown:   { type: 'Luxury High-Rise Apartment', sqft: '167 - 232 m²' },
+      midtown:    { type: 'Modern Apartment',           sqft: '111 - 149 m²' },
+      eastside:   { type: 'Townhouse',                  sqft: '130 - 167 m²' },
+      westpark:   { type: 'Garden Villa',               sqft: '139 - 186 m²' },
+      northgate:  { type: 'Classic Apartment',          sqft: '74 - 102 m²' },
+      southview:  { type: 'Compact Studio',             sqft: '46 - 74 m²' },
+      lakefront:  { type: 'Lakeside Villa',             sqft: '186 - 260 m²' },
+      oldquarter: { type: 'Heritage Cottage',           sqft: '56 - 84 m²' },
     };
 
     const interiorMap = {
@@ -1359,14 +1447,14 @@ class MapScene extends Phaser.Scene {
   // ===== Walk Animation =====
   startWalkAnimation() {
     if (this.walkTween) return;
+    const sprite = this.player.list[0];
     this.walkTween = this.tweens.add({
-      targets: [this.playerLegs.left, this.playerLegs.right],
-      x: (target, key, value, targetIndex) => {
-        return targetIndex === 0 ? -5 : 5;
-      },
-      duration: 150,
+      targets: sprite,
+      y: 0,
+      duration: 120,
       yoyo: true,
       repeat: -1,
+      ease: 'Sine.easeInOut',
     });
   }
 
@@ -1374,8 +1462,8 @@ class MapScene extends Phaser.Scene {
     if (this.walkTween) {
       this.walkTween.stop();
       this.walkTween = null;
-      this.playerLegs.left.x = -3;
-      this.playerLegs.right.x = 3;
+      const sprite = this.player.list[0];
+      if (sprite) sprite.y = 0;
     }
   }
 
@@ -1400,7 +1488,7 @@ class MapScene extends Phaser.Scene {
     this.player.body.setVelocity(vx, vy);
 
     // Shadow follows player
-    this.playerShadow.setPosition(this.player.x, this.player.y + 22);
+    this.playerShadow.setPosition(this.player.x, this.player.y + 18);
 
     // Walk animation
     if (vx !== 0 || vy !== 0) {
@@ -1434,20 +1522,50 @@ class MapScene extends Phaser.Scene {
     if (nearHouse !== this.currentNearHouse) {
       this.currentNearHouse = nearHouse;
       if (nearHouse) {
-        this.promptText.setVisible(true);
-        this.promptText.setText(`Press E to enter ${nearHouse.areaData.name}`);
-        this.promptText.setPosition(nearHouse.def.x, nearHouse.def.y - nearHouse.def.h / 2 - 52);
+        this.showPrompt(nearHouse);
       } else {
-        this.promptText.setVisible(false);
+        this.hidePrompt();
       }
     }
 
-    // Keep prompt visible and positioned
     if (this.currentNearHouse) {
-      this.promptText.setPosition(
-        this.currentNearHouse.def.x,
-        this.currentNearHouse.def.y - this.currentNearHouse.def.h / 2 - 52
-      );
+      this.positionPrompt(this.currentNearHouse);
     }
+  }
+
+  showPrompt(house) {
+    const py = house.def.y + house.def.h / 2 + 18;
+    const px = house.def.x;
+
+    // Background pill
+    const pillW = 80, pillH = 18;
+    this.promptBg.clear();
+    this.promptBg.fillStyle(0x000000, 0.6);
+    this.promptBg.fillRoundedRect(px - pillW / 2, py - pillH / 2, pillW, pillH, pillH / 2);
+    this.promptBg.setVisible(true);
+
+    this.promptKey.setPosition(px - 26, py);
+    this.promptKey.setVisible(true);
+
+    this.promptText.setText('Enter');
+    this.promptText.setPosition(px + 6, py);
+    this.promptText.setVisible(true);
+  }
+
+  hidePrompt() {
+    this.promptBg.setVisible(false);
+    this.promptText.setVisible(false);
+    this.promptKey.setVisible(false);
+  }
+
+  positionPrompt(house) {
+    const py = house.def.y + house.def.h / 2 + 18;
+    const px = house.def.x;
+    const pillW = 80, pillH = 18;
+    this.promptBg.clear();
+    this.promptBg.fillStyle(0x000000, 0.6);
+    this.promptBg.fillRoundedRect(px - pillW / 2, py - pillH / 2, pillW, pillH, pillH / 2);
+    this.promptKey.setPosition(px - 26, py);
+    this.promptText.setPosition(px + 6, py);
   }
 }
