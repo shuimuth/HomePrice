@@ -233,7 +233,7 @@ class CharacterCreateScene extends Phaser.Scene {
       await GameAPI.saveCharacter({ gender, age, race: '', name, skinTone, hairColor });
       GameState.character = { gender, age, name, skinTone, hairColor };
       document.getElementById('ui-overlay').innerHTML = '';
-      this.scene.start('CityScene');
+      this.scene.start('MapScene');
     } catch (error) {
       btn.disabled = false;
       btn.textContent = 'Continue →';
