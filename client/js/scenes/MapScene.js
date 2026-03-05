@@ -356,15 +356,19 @@ class MapScene extends Phaser.Scene {
     ];
     flowerSpots.forEach(s => this.drawFlowerBed(s.x, s.y));
 
-    // --- Lakefront willows ---
-    const lakeX = 1300, lakeY = 1000;
-    for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
-      const wx = lakeX + Math.cos(a) * 150;
-      const wy = lakeY + Math.sin(a) * 110;
-      if (wy > hRoads[2] + totalRoadW / 2 + 20) {
-        this.drawWillowTree(wx, wy);
+    // --- Lakefront willows — hand-placed around south/sides of lake, avoiding benches ---
+    const lakeX = 1400, lakeY = 1065;
+    const willowSpots = [
+      { x: lakeX - 100, y: lakeY + 10 },
+      { x: lakeX + 100, y: lakeY + 10 },
+      { x: lakeX - 40,  y: lakeY + 76 },
+      { x: lakeX + 40,  y: lakeY + 76 },
+    ];
+    willowSpots.forEach(s => {
+      if (s.y > hRoads[2] + totalRoadW / 2 + 20) {
+        this.drawWillowTree(s.x, s.y);
       }
-    }
+    });
   }
 
   isNearHouse(x, y, margin) {
@@ -448,46 +452,47 @@ class MapScene extends Phaser.Scene {
 
   // ===== Lake =====
   drawLake() {
-    const lakeX = 1300, lakeY = 1000;
+    // Safe zone: x 1234..1600, y 934..1200 → center (1400, 1065)
+    const lakeX = 1400, lakeY = 1065;
     const g = this.add.graphics().setDepth(3);
 
     // Walkway ring
     g.fillStyle(0x9e9e9e, 0.7);
-    g.fillEllipse(lakeX, lakeY, 280, 200);
+    g.fillEllipse(lakeX, lakeY, 190, 150);
 
     // Grassy shore
     g.fillStyle(0x388E3C, 0.6);
-    g.fillEllipse(lakeX, lakeY, 265, 188);
+    g.fillEllipse(lakeX, lakeY, 176, 138);
 
     // Stone embankment
     g.lineStyle(3, 0x757575, 0.6);
-    g.strokeEllipse(lakeX, lakeY, 240, 165);
+    g.strokeEllipse(lakeX, lakeY, 160, 122);
 
     // Water layers
     g.fillStyle(0x1565C0, 0.8);
-    g.fillEllipse(lakeX, lakeY, 230, 158);
+    g.fillEllipse(lakeX, lakeY, 150, 114);
     g.fillStyle(0x1976D2, 0.7);
-    g.fillEllipse(lakeX, lakeY, 200, 135);
+    g.fillEllipse(lakeX, lakeY, 128, 96);
     g.fillStyle(0x2196F3, 0.4);
-    g.fillEllipse(lakeX - 15, lakeY - 8, 140, 90);
+    g.fillEllipse(lakeX - 10, lakeY - 5, 90, 64);
 
     // Wave lines
     g.lineStyle(1, 0x64B5F6, 0.3);
-    for (let i = 0; i < 5; i++) {
-      const wy = lakeY - 40 + i * 18;
+    for (let i = 0; i < 4; i++) {
+      const wy = lakeY - 25 + i * 14;
       g.beginPath();
-      for (let wx = lakeX - 80; wx < lakeX + 80; wx += 4) {
+      for (let wx = lakeX - 50; wx < lakeX + 50; wx += 4) {
         const wwy = wy + Math.sin(wx * 0.08) * 3;
-        if (wx === lakeX - 80) g.moveTo(wx, wwy);
+        if (wx === lakeX - 50) g.moveTo(wx, wwy);
         else g.lineTo(wx, wwy);
       }
       g.strokePath();
     }
 
     // Sparkle animation
-    for (let i = 0; i < 10; i++) {
-      const sx = lakeX - 80 + Math.random() * 160;
-      const sy = lakeY - 50 + Math.random() * 100;
+    for (let i = 0; i < 8; i++) {
+      const sx = lakeX - 50 + Math.random() * 100;
+      const sy = lakeY - 35 + Math.random() * 70;
       const sparkle = this.add.circle(sx, sy, 1.5, 0xffffff, 0.4).setDepth(4);
       this.tweens.add({
         targets: sparkle,
@@ -499,25 +504,26 @@ class MapScene extends Phaser.Scene {
       });
     }
 
-    // Small dock
-    const dockG = this.add.graphics().setDepth(4);
+    // Small dock (east side, horizontal plank extending from shore)
+    const dockD = Math.floor(lakeY) + 5;
+    const dockG = this.add.graphics().setDepth(dockD);
+    const dockX = lakeX + 82, dockY = lakeY - 4;
+    // Planks
     dockG.fillStyle(0x5D4037, 1);
-    dockG.fillRect(lakeX + 95, lakeY - 8, 30, 16);
-    dockG.fillStyle(0x795548, 1);
-    dockG.fillRect(lakeX + 95, lakeY - 6, 30, 2);
-    dockG.fillRect(lakeX + 95, lakeY + 4, 30, 2);
-    // Dock posts
+    dockG.fillRect(dockX, dockY, 24, 12);
+    // Plank lines
+    dockG.fillStyle(0x795548, 0.6);
+    dockG.fillRect(dockX, dockY + 3, 24, 1);
+    dockG.fillRect(dockX, dockY + 7, 24, 1);
+    // Side rails
     dockG.fillStyle(0x4E342E, 1);
-    dockG.fillRect(lakeX + 94, lakeY - 10, 3, 20);
-    dockG.fillRect(lakeX + 124, lakeY - 10, 3, 20);
+    dockG.fillRect(dockX + 22, dockY - 1, 3, 14);
 
-    // Benches around the lake
-    const benchAngles = [Math.PI * 0.3, Math.PI * 0.7, Math.PI * 1.3, Math.PI * 1.7];
-    benchAngles.forEach(a => {
-      const bx = lakeX + Math.cos(a) * 148;
-      const by = lakeY + Math.sin(a) * 105;
-      this.drawBench(bx, by);
-    });
+    // Benches on the walkway — manually placed on the grey path, not overlapping trees
+    this.drawBench(lakeX - 50, lakeY - 78);
+    this.drawBench(lakeX + 50, lakeY - 78);
+    this.drawBench(lakeX - 80, lakeY + 50);
+    this.drawBench(lakeX + 80, lakeY + 50);
   }
 
   // ===== Street Furniture =====
