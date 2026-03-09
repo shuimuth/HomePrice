@@ -616,13 +616,17 @@ class MapScene extends Phaser.Scene {
     });
 
     const wpHouseX = 200, wpHouseY = 520, wpClear = 70;
-    for (let i = 0; i < 8; i++) {
+    const fountainX = 120, fountainY = 420, fountainClear = 55;
+    for (let i = 0; i < 6; i++) {
       let tx, ty, attempts = 0;
       do {
         tx = 30 + Math.random() * (vRoads[0] - totalRoadW / 2 - 60);
         ty = hRoads[0] + totalRoadW / 2 + 30 + Math.random() * (hRoads[1] - hRoads[0] - totalRoadW - 60);
         attempts++;
-      } while (Math.abs(tx - wpHouseX) < wpClear && Math.abs(ty - wpHouseY) < wpClear && attempts < 20);
+        const nearHouse = Math.abs(tx - wpHouseX) < wpClear && Math.abs(ty - wpHouseY) < wpClear;
+        const nearFountain = Math.hypot(tx - fountainX, ty - fountainY) < fountainClear;
+        if (!nearHouse && !nearFountain) break;
+      } while (attempts < 30);
       this.add.image(tx, ty, 'tex_park_tree')
         .setOrigin(0.5, 0.6).setDepth(DEPTH.VEGETATION_BASE + Math.floor(ty));
     }
