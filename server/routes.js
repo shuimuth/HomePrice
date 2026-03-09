@@ -256,6 +256,8 @@ function getClientConfig(condition) {
     penaltyThreshold: config.penaltyThreshold,
     bonusPerUnit: config.bonusPerUnit,
     penaltyPerUnit: config.penaltyPerUnit,
+    bonusMaxTotal: config.bonusMaxTotal,
+    penaltyMaxTotal: config.penaltyMaxTotal,
     totalGameMonths: config.totalGameMonths,
   };
 }
