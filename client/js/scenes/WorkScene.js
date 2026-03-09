@@ -168,7 +168,7 @@ class WorkScene extends Phaser.Scene {
     const barW = 400;
     const barH = 16;
     const barX = width / 2 - barW / 2;
-    const maxDisplayUnits = cfg.bonusThreshold + 5;
+    const maxDisplayUnits = cfg.penaltyThreshold / 0.75;
 
     const trackBg = this.add.graphics();
     trackBg.fillStyle(0x1a2744, 1);
@@ -191,22 +191,21 @@ class WorkScene extends Phaser.Scene {
     markerGfx.lineBetween(requiredX, barY - barH / 2 - 6, requiredX, barY + barH / 2 + 6);
     markerGfx.fillStyle(0xe74c3c, 1);
     markerGfx.fillTriangle(
-      requiredX - 4, barY - barH / 2 - 6,
-      requiredX + 4, barY - barH / 2 - 6,
-      requiredX, barY - barH / 2 - 1
+      requiredX - 4, barY + barH / 2 + 6,
+      requiredX + 4, barY + barH / 2 + 6,
+      requiredX, barY + barH / 2 + 1
     );
 
-    this.add.text(requiredX, barY + barH / 2 + 10, 'required\nwork amount', {
+    this.add.text(requiredX, barY - barH / 2 - 12, 'required work', {
       fontSize: '9px',
       fontFamily: '"Segoe UI", sans-serif',
       color: '#e74c3c',
       fontStyle: 'italic',
       align: 'center',
-      lineSpacing: 1,
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 1);
 
     // ─── Completed Units Text ───
-    this.completedText = this.add.text(width / 2, barY + 50, `0 ${theme.unitLabelCap} completed`, {
+    this.completedText = this.add.text(width / 2, barY + 30, `0 ${theme.unitLabelCap} completed`, {
       fontSize: '18px',
       fontFamily: '"Segoe UI", "Helvetica Neue", sans-serif',
       color: '#ecf0f1',
