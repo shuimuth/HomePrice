@@ -89,6 +89,10 @@ class MapScene extends Phaser.Scene {
       this.cameras.main.setZoom(1);
       this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
       this.updateHUD();
+      if (this.allVisited() && !this._toastShown) {
+        this._toastShown = true;
+        this.showAllVisitedToast();
+      }
     });
   }
 
@@ -1681,8 +1685,6 @@ class MapScene extends Phaser.Scene {
       yoyo: true,
       repeat: 3,
     });
-
-    this.showAllVisitedToast();
   }
 
   showAllVisitedToast() {
@@ -1978,8 +1980,9 @@ class MapScene extends Phaser.Scene {
       const zone = house.triggerZone;
       const dx = Math.abs(this.player.x - zone.x);
       const dy = Math.abs(this.player.y - zone.y);
-      const rangeX = (house.def.w / 2) + 35;
-      const rangeY = (house.def.h / 2) + 35;
+      const roofExtra = house.def.tier === 'mid' ? 28 : 14;
+      const rangeX = (house.def.w / 2) + 40;
+      const rangeY = (house.def.h / 2) + roofExtra + 25;
 
       if (dx < rangeX && dy < rangeY) {
         nearHouse = house;
