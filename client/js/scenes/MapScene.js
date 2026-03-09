@@ -58,6 +58,7 @@ class MapScene extends Phaser.Scene {
     this.drawDecorations(WORLD_W, WORLD_H);
     this.houses = this.createHouses();
     this.createPlayer(WORLD_W, WORLD_H);
+    this.physics.add.collider(this.player, this.buildingColliders);
     this.setupInput();
     this.createHUD();
 
@@ -951,6 +952,7 @@ class MapScene extends Phaser.Scene {
     ];
 
     const houses = [];
+    this.buildingColliders = this.physics.add.staticGroup();
 
     houseDefs.forEach((def, i) => {
       const areaData = this.areaPrices[i];
@@ -1162,19 +1164,26 @@ class MapScene extends Phaser.Scene {
         });
       }
 
-      // Neon sign / awning for premium & mid-tier buildings
+      // Cornice / awning for premium & mid-tier buildings
       if (def.tier === 'high') {
-        const neonY = by + 12;
-        const neonW = def.w * 0.5;
-        const neonX = def.x - neonW / 2;
-        buildingG.fillStyle(0x000000, 0.5);
-        buildingG.fillRoundedRect(neonX - 2, neonY - 2, neonW + 4, 12, 2);
-        const neonColors = { downtown: 0x00BCD4, lakefront: 0x64B5F6 };
-        const nc = neonColors[def.id] || 0x3498db;
-        buildingG.fillStyle(nc, 0.7);
-        buildingG.fillRoundedRect(neonX, neonY, neonW, 8, 2);
-        buildingG.fillStyle(0xffffff, 0.25);
-        buildingG.fillRoundedRect(neonX + 2, neonY + 1, neonW * 0.4, 3, 1);
+        const corniceColor = Phaser.Display.Color.IntegerToColor(def.color).lighten(15).color;
+        const corniceDark = Phaser.Display.Color.IntegerToColor(def.color).darken(10).color;
+
+        buildingG.fillStyle(corniceColor, 0.9);
+        buildingG.fillRect(bx - 3, by + 2, def.w + 6, 4);
+        buildingG.fillStyle(corniceDark, 0.5);
+        buildingG.fillRect(bx - 3, by + 6, def.w + 6, 1);
+
+        for (let f = 1; f < def.floors; f++) {
+          const fy = by + (def.h / def.floors) * f;
+          buildingG.fillStyle(corniceColor, 0.7);
+          buildingG.fillRect(bx - 2, fy - 2, def.w + 4, 3);
+          buildingG.fillStyle(corniceDark, 0.3);
+          buildingG.fillRect(bx - 2, fy + 1, def.w + 4, 1);
+        }
+
+        buildingG.fillStyle(corniceDark, 0.6);
+        buildingG.fillRect(bx - 2, by + def.h - 3, def.w + 4, 3);
       }
       if (def.tier === 'mid') {
         const awX = bx - 4, awY2 = by + def.h - 20;
@@ -1265,6 +1274,16 @@ class MapScene extends Phaser.Scene {
       const triggerZone = this.add.zone(def.x, def.y, def.w + 60, def.h + 60);
       this.physics.add.existing(triggerZone, true);
 
+      // Collision body — blocks player from walking into building
+      // Extend upward to cover roof and downward to cover foundation
+      const roofExtra = def.tier === 'mid' ? 28 : def.tier === 'high' ? 14 : 14;
+      const baseExtra = 10;
+      const colH = def.h + roofExtra + baseExtra;
+      const colY = def.y + (baseExtra - roofExtra) / 2;
+      const collisionBody = this.add.zone(def.x, colY, def.w + 8, colH);
+      this.physics.add.existing(collisionBody, true);
+      this.buildingColliders.add(collisionBody);
+
       // Visit marker (hidden by default)
       const visitMark = this.add.text(bx + def.w + 8, by - 6, '✅', {
         fontSize: '16px',
@@ -1303,7 +1322,7 @@ class MapScene extends Phaser.Scene {
     return houses;
   }
 
-  // ===== Player — 4-frame walk animation + directional facing =====
+  // ===== Player — Chibi style, 4-frame walk animation + directional facing =====
   createPlayer(worldW, worldH) {
     const startX = worldW / 2;
     const startY = worldH / 2;
@@ -1312,99 +1331,106 @@ class MapScene extends Phaser.Scene {
     const shirtColor = 0x3498db;
     const pantsColor = 0x2c3e50;
     const shoeColor = 0x1a1a2e;
+    const skinDark = Phaser.Display.Color.IntegerToColor(skinColor).darken(12).color;
+    const shirtLight = Phaser.Display.Color.IntegerToColor(shirtColor).lighten(12).color;
+    const hairDark = Phaser.Display.Color.IntegerToColor(hairColor).darken(15).color;
 
     this.player = this.add.container(startX, startY).setDepth(DEPTH.PLAYER);
     this.physics.add.existing(this.player);
     this.player.body.setCollideWorldBounds(true);
-    this.player.body.setSize(20, 20);
-    this.player.body.setOffset(-10, -10);
+    this.player.body.setSize(22, 22);
+    this.player.body.setOffset(-11, -11);
 
-    const tw = 28, th = 48;
-    const ox = tw / 2, oy = 24;
+    const tw = 48, th = 64;
+    const cx = tw / 2;
+    const headCY = 20;
+    const bodyCY = 44;
 
-    const drawCharFrame = (legOffset) => {
+    const drawCharFrame = (legOffset, frameIdx) => {
       const g = this.make.graphics({ add: false });
+      const bounce = (frameIdx === 1 || frameIdx === 3) ? -1 : 0;
+      const armSwing = legOffset * 0.6;
 
-      // Shoes
+      // -- Feet (short rounded) --
       g.fillStyle(shoeColor, 1);
-      g.fillRoundedRect(ox - 6 + legOffset, oy + 18, 5, 4, 1);
-      g.fillRoundedRect(ox + 1 - legOffset, oy + 18, 5, 4, 1);
+      g.fillRoundedRect(cx - 8 + legOffset, bodyCY + 12, 7, 5, 2);
+      g.fillRoundedRect(cx + 1 - legOffset, bodyCY + 12, 7, 5, 2);
 
-      // Legs
+      // -- Legs (stubby) --
       g.fillStyle(pantsColor, 1);
-      g.fillRect(ox - 5 + legOffset, oy + 10, 4, 9);
-      g.fillRect(ox + 1 - legOffset, oy + 10, 4, 9);
-      g.lineStyle(1, 0x000000, 0.1);
-      g.lineBetween(ox - 3 + legOffset, oy + 11, ox - 3 + legOffset, oy + 18);
-      g.lineBetween(ox + 3 - legOffset, oy + 11, ox + 3 - legOffset, oy + 18);
+      g.fillRoundedRect(cx - 7 + legOffset, bodyCY + 4, 6, 10, 2);
+      g.fillRoundedRect(cx + 1 - legOffset, bodyCY + 4, 6, 10, 2);
 
-      // Torso
+      // -- Body (small rounded rectangle) --
       g.fillStyle(shirtColor, 1);
-      g.fillRoundedRect(ox - 7, oy - 2, 14, 13, 2);
-      const collarColor = Phaser.Display.Color.IntegerToColor(shirtColor).darken(15).color;
-      g.fillStyle(collarColor, 1);
-      g.fillRect(ox - 4, oy - 2, 8, 2);
-      g.fillStyle(0xffffff, 0.1);
-      g.fillRect(ox - 6, oy - 1, 5, 10);
+      g.fillRoundedRect(cx - 10, bodyCY - 10, 20, 16, 5);
+      g.fillStyle(shirtLight, 0.3);
+      g.fillRoundedRect(cx - 8, bodyCY - 9, 8, 12, 3);
 
-      // Arms
+      // -- Arms (small round balls) --
       g.fillStyle(shirtColor, 1);
-      g.fillRoundedRect(ox - 10, oy - 1, 4, 10, 1);
-      g.fillRoundedRect(ox + 6, oy - 1, 4, 10, 1);
+      g.fillCircle(cx - 12, bodyCY - 2 + armSwing, 4);
+      g.fillCircle(cx + 12, bodyCY - 2 - armSwing, 4);
       g.fillStyle(skinColor, 1);
-      g.fillCircle(ox - 8, oy + 10, 2.5);
-      g.fillCircle(ox + 8, oy + 10, 2.5);
+      g.fillCircle(cx - 12, bodyCY + 3 + armSwing, 3);
+      g.fillCircle(cx + 12, bodyCY + 3 - armSwing, 3);
 
-      // Neck
+      // -- Neck --
       g.fillStyle(skinColor, 1);
-      g.fillRect(ox - 2, oy - 6, 4, 5);
+      g.fillRect(cx - 3, bodyCY - 14, 6, 6);
 
-      // Head
+      // -- Head (large ellipse) --
+      const hy = headCY + bounce;
       g.fillStyle(skinColor, 1);
-      g.fillCircle(ox, oy - 12, 9);
-      g.fillCircle(ox - 9, oy - 12, 2.5);
-      g.fillCircle(ox + 9, oy - 12, 2.5);
+      g.fillEllipse(cx, hy, 34, 30);
 
-      // Hair
+      // -- Ears --
+      g.fillStyle(skinColor, 1);
+      g.fillCircle(cx - 17, hy + 1, 4);
+      g.fillCircle(cx + 17, hy + 1, 4);
+      g.fillStyle(skinDark, 0.3);
+      g.fillCircle(cx - 17, hy + 1, 2);
+      g.fillCircle(cx + 17, hy + 1, 2);
+
+      // -- Hair (poofy top) --
       g.fillStyle(hairColor, 1);
-      g.fillEllipse(ox, oy - 18, 20, 8);
-      g.fillRoundedRect(ox - 10, oy - 19, 20, 8, 3);
-      g.fillStyle(hairColor, 0.8);
-      g.fillRect(ox - 10, oy - 18, 3, 6);
-      g.fillRect(ox + 7, oy - 18, 3, 6);
+      g.fillEllipse(cx, hy - 10, 36, 18);
+      g.fillRoundedRect(cx - 18, hy - 14, 36, 12, 6);
+      g.fillStyle(hairColor, 0.9);
+      g.fillEllipse(cx - 14, hy - 2, 10, 16);
+      g.fillEllipse(cx + 14, hy - 2, 10, 16);
+      g.fillStyle(hairDark, 0.4);
+      g.fillEllipse(cx, hy - 14, 28, 8);
 
-      // Face
-      g.fillStyle(0xffffff, 1);
-      g.fillEllipse(ox - 4, oy - 13, 5, 4);
-      g.fillEllipse(ox + 4, oy - 13, 5, 4);
-      g.fillStyle(0x4a3728, 1);
-      g.fillCircle(ox - 4, oy - 13, 1.8);
-      g.fillCircle(ox + 4, oy - 13, 1.8);
-      g.fillStyle(0x000000, 1);
-      g.fillCircle(ox - 4, oy - 13, 0.8);
-      g.fillCircle(ox + 4, oy - 13, 0.8);
-      g.fillStyle(0xffffff, 0.8);
-      g.fillCircle(ox - 3.2, oy - 13.8, 0.6);
-      g.fillCircle(ox + 4.8, oy - 13.8, 0.6);
-      const browColor = Phaser.Display.Color.IntegerToColor(hairColor).darken(20).color;
-      g.lineStyle(1.5, browColor, 0.7);
-      g.lineBetween(ox - 6, oy - 16, ox - 2, oy - 15.5);
-      g.lineBetween(ox + 2, oy - 15.5, ox + 6, oy - 16);
-      const noseColor = Phaser.Display.Color.IntegerToColor(skinColor).darken(10).color;
-      g.fillStyle(noseColor, 0.4);
-      g.fillCircle(ox, oy - 10.5, 1.2);
-      g.lineStyle(1, 0xc0392b, 0.5);
+      // -- Face --
+      // Eyes: big black bean eyes with highlights
+      g.fillStyle(0x1a1a1a, 1);
+      g.fillCircle(cx - 7, hy + 1, 3.5);
+      g.fillCircle(cx + 7, hy + 1, 3.5);
+      g.fillStyle(0xffffff, 0.9);
+      g.fillCircle(cx - 6, hy - 0.5, 1.5);
+      g.fillCircle(cx + 8, hy - 0.5, 1.5);
+      g.fillStyle(0xffffff, 0.5);
+      g.fillCircle(cx - 8, hy + 2, 0.8);
+      g.fillCircle(cx + 6, hy + 2, 0.8);
+
+      // Blush
+      g.fillStyle(0xFF9999, 0.25);
+      g.fillEllipse(cx - 12, hy + 5, 8, 5);
+      g.fillEllipse(cx + 12, hy + 5, 8, 5);
+
+      // Smile
+      g.lineStyle(1.5, 0xc0392b, 0.45);
       g.beginPath();
-      g.arc(ox, oy - 8, 2.5, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160));
+      g.arc(cx, hy + 5, 4, Phaser.Math.DegToRad(15), Phaser.Math.DegToRad(165));
       g.strokePath();
 
       return g;
     };
 
-    // Generate 4 walk frames: stand, left step, stand, right step
     const offsets = [0, -2, 0, 2];
     offsets.forEach((off, idx) => {
-      const g = drawCharFrame(off);
+      const g = drawCharFrame(off, idx);
       g.generateTexture(`player_walk_${idx}`, tw, th);
       g.destroy();
     });
@@ -1421,12 +1447,12 @@ class MapScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    const charSprite = this.add.sprite(0, 0, 'player_walk_0').setOrigin(0.5);
+    const charSprite = this.add.sprite(0, 0, 'player_walk_0').setOrigin(0.5).setScale(0.65);
     this._charSprite = charSprite;
 
     const arrow = this.add.graphics();
     arrow.fillStyle(0x2ecc71, 0.8);
-    arrow.fillTriangle(0, -28, -4, -23, 4, -23);
+    arrow.fillTriangle(0, -26, -4, -21, 4, -21);
     this.tweens.add({
       targets: arrow,
       y: -2,
@@ -1439,7 +1465,7 @@ class MapScene extends Phaser.Scene {
     this.player.add([charSprite, arrow]);
     this._isWalking = false;
 
-    this.playerShadow = this.add.ellipse(startX, startY + 18, 18, 7, 0x000000, 0.2).setDepth(DEPTH.PLAYER_SHADOW);
+    this.playerShadow = this.add.ellipse(startX, startY + 16, 18, 6, 0x000000, 0.2).setDepth(DEPTH.PLAYER_SHADOW);
   }
 
   getSkinColorHex() {
@@ -1834,7 +1860,7 @@ class MapScene extends Phaser.Scene {
     if (vx < 0) this._charSprite.setFlipX(true);
     else if (vx > 0) this._charSprite.setFlipX(false);
 
-    this.playerShadow.setPosition(this.player.x, this.player.y + 18);
+    this.playerShadow.setPosition(this.player.x, this.player.y + 16);
 
     if (vx !== 0 || vy !== 0) {
       this.startWalkAnimation();
