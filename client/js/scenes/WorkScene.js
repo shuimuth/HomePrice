@@ -395,40 +395,33 @@ class WorkScene extends Phaser.Scene {
     const cfg = GameState.config;
     const isBonus = this.completedUnits > cfg.bonusThreshold;
     const isPenalty = this.completedUnits < cfg.penaltyThreshold;
+    const unitLabel = this.getUnitLabel();
 
-    let bonusText = '';
+    let detailLines = `<p style="color: #bdc3c7; font-size: 14px; margin: 6px 0;">- Base payment: ${cfg.monthlyBaseSalary.toLocaleString()}</p>`;
     if (isBonus) {
-      bonusText = `<p style="color: #2ecc71;">🎉 Bonus: +$${bonusDeduction} (${this.completedUnits - cfg.bonusThreshold} extra units)</p>`;
+      detailLines += `<p style="color: #2ecc71; font-size: 14px; margin: 6px 0;">- 🎉 Bonus: +${bonusDeduction.toLocaleString()} (${this.completedUnits - cfg.bonusThreshold} extra units)</p>`;
     } else if (isPenalty) {
-      bonusText = `<p style="color: #e74c3c;">⚠️ Deduction: -$${bonusDeduction} (${cfg.penaltyThreshold - this.completedUnits} units short)</p>`;
-    } else {
-      bonusText = `<p style="color: #95a5a6;">No bonus or deduction this month.</p>`;
+      detailLines += `<p style="color: #e67e22; font-size: 14px; margin: 6px 0;">- ⚠️ Penalty: -${bonusDeduction.toLocaleString()} (${cfg.penaltyThreshold - this.completedUnits} ${unitLabel} short)</p>`;
     }
 
     const container = document.createElement('div');
     container.className = 'modal-backdrop';
     container.innerHTML = `
-      <div class="modal-content" style="max-width: 450px; text-align: center;">
-        <h2>💰 Salary Report — Month ${GameState.currentMonth}</h2>
+      <div class="modal-content" style="max-width: 420px; text-align: left;">
+        <h2 style="text-align: center; margin-bottom: 16px;">💰 Month ${GameState.currentMonth} - Salary</h2>
 
-        <div style="background: #0f3460; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: left;">
-          <p style="color: #bdc3c7; font-size: 14px;">📋 Work Summary:</p>
-          <p style="color: #ecf0f1; margin-top: 8px;">Completed: <strong>${this.completedUnits}</strong> ${this.getUnitLabel()}</p>
+        <div style="margin-bottom: 12px;">
+          <p style="color: #bdc3c7; font-size: 13px;">■ Work Summary:</p>
+          <p style="color: #ecf0f1; margin-top: 6px;">Completed: <strong>${this.completedUnits}</strong> ${unitLabel}  <span style="color: #7f8c8d;">(required: ${cfg.penaltyThreshold} ${unitLabel})</span></p>
         </div>
 
-        <div style="background: #16213e; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: left;">
-          <p style="color: #bdc3c7; font-size: 14px;">💵 Earnings:</p>
-          <p style="color: #ecf0f1; margin-top: 8px;">Base salary: $${cfg.monthlyBaseSalary}</p>
-          ${bonusText}
-          <hr style="border-color: #2c3e50; margin: 8px 0;">
-          <p style="color: #2ecc71; font-size: 18px; font-weight: bold;">Total: $${salary}</p>
+        <div style="background: #16213e; border-radius: 8px; padding: 16px; margin: 12px 0;">
+          <p style="color: #ecf0f1; font-size: 15px; font-weight: bold; margin-bottom: 8px;">Total Earnings:</p>
+          <p style="color: #2ecc71; font-size: 28px; font-weight: bold; text-align: center; margin: 12px 0;">$ ${salary.toLocaleString()}</p>
+          ${detailLines}
         </div>
 
-        <p style="color: #bdc3c7; font-size: 14px;">
-          Current balance: <strong style="color: #2ecc71;">$${GameState.balance.toLocaleString()}</strong>
-        </p>
-
-        <button class="btn btn-primary" id="salary-continue" style="width: 100%; padding: 12px; margin-top: 16px;">
+        <button class="btn btn-primary" id="salary-continue" style="width: 100%; padding: 12px; margin-top: 12px;">
           Continue →
         </button>
       </div>
@@ -438,7 +431,104 @@ class WorkScene extends Phaser.Scene {
 
     document.getElementById('salary-continue').addEventListener('click', () => {
       overlay.innerHTML = '';
-      this.scene.start('MonthEndScene');
+      this.showLivingExpenses();
+    });
+  }
+
+  showLivingExpenses() {
+    const cfg = GameState.config;
+    const salary = cfg.monthlyBaseSalary;
+    const totalExpense = Math.round(salary * cfg.livingExpenseRatio);
+    const breakdown = cfg.livingExpenseBreakdown;
+
+    const rent = Math.round(totalExpense * breakdown.rent);
+    const food = Math.round(totalExpense * breakdown.food);
+    const transport = Math.round(totalExpense * breakdown.transport);
+    const utilities = totalExpense - rent - food - transport; // remainder
+
+    this.totalExpense = totalExpense;
+
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 420px; text-align: left;">
+        <h2 style="text-align: center; margin-bottom: 16px;">📦 Month ${GameState.currentMonth} - Living Expenses</h2>
+
+        <div style="background: #0f3460; border-radius: 8px; padding: 16px; margin: 12px 0;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="color: #bdc3c7;">🏠 Rent</span>
+            <span style="color: #e74c3c; font-weight: bold;">-$${rent}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="color: #bdc3c7;">🍔 Food & Groceries</span>
+            <span style="color: #e74c3c; font-weight: bold;">-$${food}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="color: #bdc3c7;">🚌 Transportation</span>
+            <span style="color: #e74c3c; font-weight: bold;">-$${transport}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span style="color: #bdc3c7;">💡 Utilities</span>
+            <span style="color: #e74c3c; font-weight: bold;">-$${utilities}</span>
+          </div>
+          <hr style="border-color: #2c3e50; margin: 10px 0;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #ecf0f1; font-weight: bold;">Total Expenses</span>
+            <span style="color: #e74c3c; font-weight: bold; font-size: 18px;">-$${totalExpense}</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="pay-bill-btn" style="width: 100%; padding: 12px; margin-top: 12px; font-size: 16px; font-weight: bold;">
+          Pay My Bill
+        </button>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('pay-bill-btn').addEventListener('click', () => {
+      // Deduct expenses from balance
+      GameState.balance -= totalExpense;
+      this.showPaidConfirmation();
+    });
+  }
+
+  showPaidConfirmation() {
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 420px; text-align: center;">
+        <h2 style="margin-bottom: 16px;">📦 Month ${GameState.currentMonth} - Living Expenses</h2>
+
+        <p style="color: #ecf0f1; font-size: 18px; margin: 24px 0; line-height: 1.6;">
+          Living expenses for month ${GameState.currentMonth}<br>have been paid!
+        </p>
+
+        <div style="background: #16213e; border-radius: 8px; padding: 12px 20px; margin: 16px auto; display: inline-block;">
+          <span style="color: #bdc3c7; font-size: 14px;">Remaining Balance: </span>
+          <span style="color: #2ecc71; font-size: 18px; font-weight: bold;">$${GameState.balance.toLocaleString()}</span>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <button class="btn btn-primary" id="expense-continue" style="width: 100%; padding: 12px;">
+            Continue →
+          </button>
+        </div>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('expense-continue').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      // Go to house price display
+      this.scene.start('HousePriceScene');
     });
   }
 
