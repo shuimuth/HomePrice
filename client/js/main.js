@@ -60,6 +60,8 @@ async function initGame() {
       scene: [
         BootScene,
         CharacterCreateScene,
+        MapScene,
+        HouseInteriorScene,
         JobSelectScene,
         CityScene,
         WorkScene,
@@ -129,7 +131,7 @@ function getResumeScene(session) {
     case 'init':
       return 'BootScene';
     case 'character_done':
-      return 'JobSelectScene';
+      return 'MapScene';
     case 'job_done':
     case 'working':
       return 'CityScene';

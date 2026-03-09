@@ -155,21 +155,19 @@ class CityScene extends Phaser.Scene {
         </div>
 
         <div style="
-          background: linear-gradient(135deg, #2d1b4e 0%, #1a1a3e 50%, #1c2a3a 100%);
           border-radius: 8px;
-          padding: 16px;
           margin: 12px 0 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 120px;
           position: relative;
           overflow: hidden;
         ">
-          <div style="text-align: center; font-size: 48px; line-height: 1.4; letter-spacing: 4px; opacity: 0.9;">
-            🪣🧹🛏️<br>🚿🪳💡
-          </div>
-          <div style="position: absolute; bottom: 6px; right: 10px; font-size: 10px; color: #7f8c8d;">
+          <img src="assets/house/room.jpg" alt="Your small rented basement" style="
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+            object-fit: cover;
+            max-height: 180px;
+          " />
+          <div style="position: absolute; bottom: 6px; right: 10px; font-size: 10px; color: #ccc; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
             Your small rented basement
           </div>
         </div>

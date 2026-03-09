@@ -359,9 +359,11 @@ class WorkScene extends Phaser.Scene {
 
     if (this.completedUnits > cfg.bonusThreshold) {
       bonusDeduction = (this.completedUnits - cfg.bonusThreshold) * cfg.bonusPerUnit;
+      bonusDeduction = Math.min(bonusDeduction, cfg.bonusMaxTotal);
       salary += bonusDeduction;
     } else if (this.completedUnits < cfg.penaltyThreshold) {
       bonusDeduction = (cfg.penaltyThreshold - this.completedUnits) * cfg.penaltyPerUnit;
+      bonusDeduction = Math.min(bonusDeduction, cfg.penaltyMaxTotal);
       salary -= bonusDeduction;
     }
 

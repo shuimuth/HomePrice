@@ -37,12 +37,14 @@ module.exports = {
   investmentAmount: 10000, // hypothetical investment amount ($XXX)
 
   // --- Work Task Parameters ---
-  clicksPerTaskUnit: 35,           // mouse clicks required per task unit
-  workTimeLimitSeconds: 60,        // time limit per work session (seconds)
+  clicksPerTaskUnit: 3,           // mouse clicks required per task unit
+  workTimeLimitSeconds: 5,        // time limit per work session (seconds)
   bonusThreshold: 10,              // task units above this earn bonus
   penaltyThreshold: 5,             // task units below this incur penalty
-  bonusPerUnit: 50,                // bonus per extra task unit above threshold
-  penaltyPerUnit: 50,              // deduction per missing task unit below threshold
+  bonusPerUnit: 5,                 // bonus per extra task unit above threshold
+  penaltyPerUnit: 5,               // deduction per missing task unit below threshold
+  bonusMaxTotal: 250,              // maximum total bonus cap
+  penaltyMaxTotal: 250,            // maximum total penalty cap
 
   // --- Game Structure ---
   totalGameMonths: 3,              // number of game months
