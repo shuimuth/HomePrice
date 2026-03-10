@@ -23,10 +23,10 @@ module.exports = {
   highHousePriceMultiplier: 60, // HHP: average house price = salary * 60
 
   // --- Lottery Parameters ---
-  lotteryPrice: 3, // cost per lottery ticket (game currency $2-$5)
+  lotteryPrice: 20, // cost per lottery ticket (game currency $2-$5)
   lotteryA: {
-    winProbability: 1 / 100,       // 1 in 100 chance
-    prizeMultiplier: 60,           // prize = monthlyBaseSalary * 60 (5 years income)
+    winProbability: 1 / 1000,       // 1 in 1000 chance
+    prizeMultiplier: 600,           // prize = monthlyBaseSalary * 600 (50 years income)
   },
   lotteryB: {
     winProbability: 1 / 5,         // 1 in 5 chance
