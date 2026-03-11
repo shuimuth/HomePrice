@@ -13,6 +13,7 @@ const GameState = {
   balance: 0,            // current asset balance
   currentMonth: 1,       // 1, 2, or 3
   monthlyPerformance: [],// [{clicks, unitsCompleted, timeSpent}]
+  salaryHistory: [],     // actual salary earned each month
   monthStartTime: null,  // timestamp for current month start
   gameStartTime: null,   // timestamp for game start
   sessionData: null,     // session data from server (for resume)

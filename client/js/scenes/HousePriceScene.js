@@ -397,12 +397,76 @@ class HousePriceScene extends Phaser.Scene {
     const totalMonths = GameState.config.totalGameMonths;
 
     if (month < totalMonths) {
-      // Move to next month
       GameState.currentMonth++;
       this.scene.start('CityScene');
     } else {
-      // All months complete — proceed to financial decisions
-      this.scene.start('LotteryScene');
+      this.showFinalSummary();
     }
+  }
+
+  showFinalSummary() {
+    const cfg = GameState.config;
+    const totalMonths = cfg.totalGameMonths;
+    const balance = GameState.balance;
+
+    const totalEarnings = GameState.salaryHistory.reduce((sum, s) => sum + s, 0);
+    const avgEarnings = Math.round(totalEarnings / totalMonths);
+    const avgExpenses = Math.round(cfg.monthlyBaseSalary * cfg.livingExpenseRatio);
+    const avgHomePrice = cfg.averageHousePrice;
+
+    const jobEmoji = { restaurant: '🍽️', computer: '🖥️', finance: '📊' };
+    const titleIcon = jobEmoji[GameState.jobType] || '💼';
+
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 460px; padding: 28px 32px;">
+        <div class="work-report-title">
+          <span class="title-icon">${titleIcon}</span> Three-Month Financial Overview
+        </div>
+
+        <!-- Balance Card -->
+        <div class="work-card">
+          <div class="work-card-header">Current Balance</div>
+          <div class="work-amount-large balance">$${balance.toLocaleString()}</div>
+          <hr class="work-ledger-divider">
+          <ul class="work-ledger" style="margin-top: 8px;">
+            <li class="work-ledger-row">
+              <span class="work-ledger-row ledger-label"><span class="ledger-icon">💰</span> Avg. monthly earnings</span>
+              <span style="color: #2ecc71; font-weight: 600; font-size: 14px;">$${avgEarnings.toLocaleString()}</span>
+            </li>
+            <li class="work-ledger-row">
+              <span class="work-ledger-row ledger-label"><span class="ledger-icon">🏠</span> Avg. monthly expenses</span>
+              <span style="color: #e67e22; font-weight: 600; font-size: 14px;">$${avgExpenses.toLocaleString()}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Housing Market Card -->
+        <div class="work-card" style="text-align: center;">
+          <div class="work-card-header">Housing Market Update</div>
+          <div style="color: #95a5a6; font-size: 13px; margin-bottom: 6px;">Average home price</div>
+          <div style="color: #f39c12; font-size: 28px; font-weight: 800; letter-spacing: 0.5px; animation: citySlideUp 0.5s ease 0.3s both;">
+            $${avgHomePrice.toLocaleString()}
+          </div>
+        </div>
+
+        <div class="work-btn-wrap">
+          <button class="btn btn-primary" id="final-summary-continue" style="width: 100%; padding: 14px; font-size: 16px; font-weight: bold;">
+            Got it!
+          </button>
+        </div>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('final-summary-continue').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      this.scene.start('LotteryScene');
+    });
   }
 }
