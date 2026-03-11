@@ -473,7 +473,7 @@ class WorkScene extends Phaser.Scene {
     container.innerHTML = `
       <div class="modal-content" style="max-width: 440px; text-align: left;">
         <h2 class="work-report-title">
-          <span class="title-icon">📦</span> Month ${GameState.currentMonth} — Living Expenses
+          <span class="title-icon">🧾</span> Month ${GameState.currentMonth} — Living Expenses
         </h2>
 
         <div class="work-card">
@@ -525,7 +525,7 @@ class WorkScene extends Phaser.Scene {
     container.innerHTML = `
       <div class="modal-content" style="max-width: 440px; text-align: center;">
         <h2 class="work-report-title">
-          <span class="title-icon">📦</span> Month ${GameState.currentMonth} — Living Expenses
+          <span class="title-icon">🧾</span> Month ${GameState.currentMonth} — Living Expenses
         </h2>
 
         <div class="work-paid-check">✓</div>
