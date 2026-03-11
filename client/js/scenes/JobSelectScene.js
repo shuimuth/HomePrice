@@ -103,9 +103,9 @@ class JobSelectScene extends Phaser.Scene {
     const bonus = cfg.bonusPerUnit;
 
     const jobFlavor = {
-      restaurant: { unit: 'dishes', verb: 'right-click the mouse' },
-      computer:   { unit: 'system checks', verb: 'right-click the mouse' },
-      finance:    { unit: 'profit sheets', verb: 'right-click the mouse' },
+      restaurant: { unit: 'dishes', verb: 'left-click the mouse' },
+      computer:   { unit: 'system checks', verb: 'left-click the mouse' },
+      finance:    { unit: 'profit sheets', verb: 'left-click the mouse' },
     };
     const flavor = jobFlavor[jobType] || jobFlavor.restaurant;
     const totalWork = requiredUnits * cfg.clicksPerTaskUnit * 10;
