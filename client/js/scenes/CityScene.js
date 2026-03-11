@@ -96,25 +96,28 @@ class CityScene extends Phaser.Scene {
     container.className = 'modal-backdrop';
     container.innerHTML = `
       <div class="modal-content" style="max-width: 500px; text-align: left; padding: 32px 36px;">
-        <h2 style="text-align: center; color: #f39c12; margin-bottom: 24px;">Your Current State</h2>
+        <h2 class="city-intro-title">Your Current State</h2>
 
-        <p style="color: #ecf0f1; font-size: 15px; font-weight: bold; margin-bottom: 16px;">
-          Welcome to Valrenta!
-        </p>
+        <p class="city-intro-welcome">Welcome to Valrenta!</p>
 
-        <p style="color: #bdc3c7; font-size: 14px; line-height: 1.7; margin-bottom: 24px;">
+        <p class="city-intro-narrative">
           You've just ${backstory}, and are about to
-          <span style="color: #3498db; text-decoration: underline;">start a new life here in the city of Valrenta</span>.
+          <span class="highlight">start a new life here in the city of Valrenta</span>.
         </p>
 
-        <p style="color: #bdc3c7; font-size: 14px; margin-bottom: 8px;">
-          Your starting funds (previous savings):
-          <span style="color: #f39c12; font-weight: bold; font-size: 16px;">$ ${balance.toLocaleString()}</span>
-        </p>
+        <div class="city-stat-card">
+          <span class="stat-icon">💰</span>
+          <div class="stat-body">
+            <div class="stat-label">Starting Funds (Previous Savings)</div>
+            <div class="stat-value">$ ${balance.toLocaleString()}</div>
+          </div>
+        </div>
 
-        <button class="btn btn-primary" id="current-state-next" style="width: 100%; padding: 14px; margin-top: 24px; font-size: 16px;">
-          Next
-        </button>
+        <div class="city-btn-row" style="margin-top: 24px;">
+          <button class="btn btn-primary" id="current-state-next" style="width: 100%; font-size: 16px;">
+            Next
+          </button>
+        </div>
       </div>
     `;
 
@@ -137,48 +140,43 @@ class CityScene extends Phaser.Scene {
     container.className = 'modal-backdrop';
     container.innerHTML = `
       <div class="modal-content" style="max-width: 520px; padding: 28px 32px;">
-        <h2 style="text-align: center; color: #f39c12; margin-bottom: 20px;">🏠 Your Current Housing State</h2>
+        <h2 class="city-intro-title">Your Current Housing</h2>
 
-        <div style="text-align: left; margin-bottom: 16px;">
-          <p style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-bottom: 12px;">
-            - You do <span style="text-decoration: underline;">NOT</span> own any property.
-          </p>
-
-          <p style="color: #bdc3c7; font-size: 14px; margin-bottom: 6px;">- You currently live in a small rented basement</p>
-          <div style="padding-left: 18px; margin-bottom: 4px;">
-            <p style="color: #bdc3c7; font-size: 13px; line-height: 1.8;">
-              - Area: 18 m²<br>
-              - Monthly rent: <strong style="color: #f39c12;">$${monthlyRent}</strong><br>
-              - Housing condition: <strong style="color: #e74c3c;">poor</strong>
-            </p>
-          </div>
+        <div class="city-warning-badge">
+          <span>⚠</span> You do <strong>NOT</strong> own any property
         </div>
 
-        <div style="
-          border-radius: 8px;
-          margin: 12px 0 20px;
-          position: relative;
-          overflow: hidden;
-        ">
-          <img src="assets/house/room.jpg" alt="Your small rented basement" style="
-            width: 100%;
-            display: block;
-            border-radius: 8px;
-            object-fit: cover;
-            max-height: 180px;
-          " />
-          <div style="position: absolute; bottom: 6px; right: 10px; font-size: 10px; color: #ccc; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
-            Your small rented basement
-          </div>
+        <p class="city-intro-narrative" style="margin-bottom: 14px;">
+          You currently live in a small rented basement.
+        </p>
+
+        <ul class="city-housing-list">
+          <li class="city-housing-item" style="animation-delay: 0.15s;">
+            <span class="item-icon">📐</span>
+            <span class="item-label">Area</span>
+            <span class="item-value" style="color: #ecf0f1;">18 m²</span>
+          </li>
+          <li class="city-housing-item" style="animation-delay: 0.25s;">
+            <span class="item-icon">💵</span>
+            <span class="item-label">Monthly Rent</span>
+            <span class="item-value" style="color: #f39c12;">$${monthlyRent}</span>
+          </li>
+          <li class="city-housing-item" style="animation-delay: 0.35s;">
+            <span class="item-icon">🏚️</span>
+            <span class="item-label">Condition</span>
+            <span class="item-value" style="color: #e74c3c;">Poor</span>
+          </li>
+        </ul>
+
+        <div class="city-housing-image">
+          <img src="assets/house/room.jpg" alt="Your small rented basement" />
+          <div class="image-overlay"></div>
+          <span class="image-caption">Your small rented basement</span>
         </div>
 
-        <div style="display: flex; gap: 12px;">
-          <button class="btn btn-primary" id="housing-prev" style="flex: 1; padding: 14px; font-size: 15px; background: #34495e;">
-            Previous
-          </button>
-          <button class="btn btn-primary" id="housing-next" style="flex: 1; padding: 14px; font-size: 15px;">
-            Next
-          </button>
+        <div class="city-btn-row">
+          <button class="btn btn-secondary" id="housing-prev">Previous</button>
+          <button class="btn btn-primary" id="housing-next">Next</button>
         </div>
       </div>
     `;
@@ -204,18 +202,27 @@ class CityScene extends Phaser.Scene {
     container.className = 'modal-backdrop';
     container.innerHTML = `
       <div class="modal-content" style="max-width: 500px; padding: 32px 36px;">
-        <h2 style="text-align: center; color: #3498db; margin-bottom: 24px;">Over the next few months...</h2>
+        <h2 class="city-intro-title" style="color: #3498db;">Over the next few months...</h2>
 
-        <p style="color: #ecf0f1; font-size: 16px; font-weight: bold; line-height: 1.8; margin-bottom: 28px;">
-          You will find a job, work, and get paid monthly, eventually saving up to build your life here.
-        </p>
+        <ul class="city-steps">
+          <li style="animation-delay: 0.15s;">
+            <span class="step-icon">🔍</span>
+            <span>Find a job in the city</span>
+          </li>
+          <li style="animation-delay: 0.25s;">
+            <span class="step-icon">💼</span>
+            <span>Work hard and get paid monthly</span>
+          </li>
+          <li style="animation-delay: 0.35s;">
+            <span class="step-icon">🏡</span>
+            <span>Save up and build your life here</span>
+          </li>
+        </ul>
 
-        <div style="display: flex; gap: 12px;">
-          <button class="btn btn-primary" id="months-prev" style="flex: 1; padding: 14px; font-size: 15px; background: #34495e;">
-            Previous
-          </button>
-          <button class="btn btn-primary" id="months-next" style="flex: 1.4; padding: 14px; font-size: 14px;">
-            Got it.<br>Start finding a job!
+        <div class="city-btn-row">
+          <button class="btn btn-secondary" id="months-prev">Previous</button>
+          <button class="btn btn-primary btn-cta" id="months-next">
+            Got it — Start finding a job!
           </button>
         </div>
       </div>
@@ -337,21 +344,19 @@ class CityScene extends Phaser.Scene {
     container.style.background = 'rgba(0,0,0,0.6)';
     const countdownStart = 3;
     container.innerHTML = `
-      <div style="text-align: center; color: #ecf0f1;">
-        <h1 style="font-size: 48px; color: #f39c12; margin-bottom: 10px;">Month ${month}</h1>
-        <p style="font-size: 18px; color: #bdc3c7;">Time to get to work!</p>
-        <p id="countdown-number" style="font-size: 64px; font-weight: bold; color: #e74c3c; margin-top: 16px; transition: transform 0.3s ease, opacity 0.3s ease;">${countdownStart}</p>
+      <div class="city-countdown-wrap">
+        <div class="city-countdown-month">Month ${month}</div>
+        <p class="city-countdown-subtitle">Time to get to work!</p>
+        <div id="countdown-number" class="city-countdown-number">${countdownStart}</div>
       </div>
     `;
     overlay.appendChild(container);
 
-    // Countdown timer
     let remaining = countdownStart;
     const countdownEl = document.getElementById('countdown-number');
     const countdownInterval = setInterval(() => {
       remaining--;
       if (remaining > 0) {
-        // Animate: scale up then back
         countdownEl.style.transform = 'scale(1.4)';
         countdownEl.style.opacity = '0.5';
         setTimeout(() => {
@@ -362,7 +367,7 @@ class CityScene extends Phaser.Scene {
       } else {
         clearInterval(countdownInterval);
         countdownEl.textContent = 'GO!';
-        countdownEl.style.color = '#2ecc71';
+        countdownEl.classList.add('go');
         countdownEl.style.transform = 'scale(1.5)';
         setTimeout(() => {
           overlay.innerHTML = '';

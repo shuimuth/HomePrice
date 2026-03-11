@@ -407,3 +407,299 @@ body {
 #avatar-preview svg:hover {
   filter: drop-shadow(0 4px 20px rgba(52, 152, 219, 0.4));
 }
+
+/* ============================================
+   CityScene - Intro & Month Start UI
+   ============================================ */
+
+/* --- Animations --- */
+@keyframes cityFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes citySlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cityPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+@keyframes cityGlow {
+  0%, 100% { text-shadow: 0 0 8px rgba(243, 156, 18, 0.4); }
+  50% { text-shadow: 0 0 20px rgba(243, 156, 18, 0.8), 0 0 40px rgba(243, 156, 18, 0.3); }
+}
+
+/* --- Intro Title --- */
+.city-intro-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #f39c12;
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+  animation: citySlideUp 0.5s ease both;
+}
+
+.city-intro-title::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+/* --- Welcome Text --- */
+.city-intro-welcome {
+  color: #ecf0f1;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  animation: citySlideUp 0.5s ease 0.1s both;
+}
+
+/* --- Narrative Paragraph --- */
+.city-intro-narrative {
+  color: #bdc3c7;
+  font-size: 14px;
+  line-height: 1.8;
+  margin-bottom: 24px;
+  animation: citySlideUp 0.5s ease 0.2s both;
+}
+
+.city-intro-narrative .highlight {
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* --- Stat Highlight Card --- */
+.city-stat-card {
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid rgba(52, 152, 219, 0.25);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  animation: citySlideUp 0.5s ease 0.3s both;
+}
+
+.city-stat-card .stat-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.city-stat-card .stat-body {
+  flex: 1;
+}
+
+.city-stat-card .stat-label {
+  color: #95a5a6;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.city-stat-card .stat-value {
+  color: #f39c12;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* --- Housing Feature List --- */
+.city-housing-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.city-housing-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(52, 152, 219, 0.1);
+  animation: citySlideUp 0.4s ease both;
+}
+
+.city-housing-item:last-child {
+  border-bottom: none;
+}
+
+.city-housing-item .item-icon {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.city-housing-item .item-label {
+  color: #95a5a6;
+  font-size: 13px;
+  flex: 1;
+}
+
+.city-housing-item .item-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* --- Housing Image Container --- */
+.city-housing-image {
+  border-radius: 8px;
+  margin: 12px 0 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.city-housing-image img {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  object-fit: cover;
+  max-height: 180px;
+  transition: transform 0.4s ease;
+}
+
+.city-housing-image:hover img {
+  transform: scale(1.03);
+}
+
+.city-housing-image .image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+
+.city-housing-image .image-caption {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.3px;
+}
+
+/* --- Button Row --- */
+.city-btn-row {
+  display: flex;
+  gap: 12px;
+  animation: citySlideUp 0.5s ease 0.4s both;
+}
+
+.city-btn-row .btn {
+  flex: 1;
+  padding: 14px;
+  font-size: 15px;
+}
+
+.city-btn-row .btn-cta {
+  flex: 1.4;
+}
+
+/* --- Steps List (Next Months) --- */
+.city-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  text-align: left;
+}
+
+.city-steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  color: #ecf0f1;
+  font-size: 15px;
+  font-weight: 500;
+  animation: citySlideUp 0.5s ease both;
+}
+
+.city-steps li .step-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(52, 152, 219, 0.15);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.city-steps li .step-connector {
+  position: absolute;
+  left: 17px;
+  top: 46px;
+  width: 2px;
+  height: 20px;
+  background: rgba(52, 152, 219, 0.2);
+}
+
+/* --- Countdown --- */
+.city-countdown-wrap {
+  text-align: center;
+  color: #ecf0f1;
+  animation: cityFadeIn 0.4s ease both;
+}
+
+.city-countdown-month {
+  font-size: 52px;
+  font-weight: 800;
+  color: #f39c12;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  animation: cityGlow 2s ease infinite;
+}
+
+.city-countdown-subtitle {
+  font-size: 17px;
+  color: #bdc3c7;
+  margin-bottom: 20px;
+  letter-spacing: 0.3px;
+}
+
+.city-countdown-number {
+  font-size: 72px;
+  font-weight: 800;
+  color: #e74c3c;
+  transition: transform 0.3s ease, opacity 0.3s ease, color 0.3s ease;
+  text-shadow: 0 0 16px rgba(231, 76, 60, 0.5);
+  line-height: 1;
+}
+
+.city-countdown-number.go {
+  color: #2ecc71;
+  text-shadow: 0 0 24px rgba(46, 204, 113, 0.6);
+  animation: cityPulse 0.5s ease;
+}
+
+/* --- Ownership Warning Badge --- */
+.city-warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 6px;
+  padding: 8px 14px;
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  animation: citySlideUp 0.4s ease 0.1s both;
+}
