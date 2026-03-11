@@ -381,7 +381,7 @@ body {
 
 /* --- Avatar Color Swatches --- */
 .color-swatch:hover {
-  transform: scale(1.18) !important;
+  transform: scale(1.15) !important;
 }
 
 .color-swatch:active {
@@ -693,11 +693,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(231, 76, 60, 0.12);
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  background: rgba(243, 156, 18, 0.12);
+  border: 1px solid rgba(243, 156, 18, 0.3);
   border-radius: 6px;
   padding: 8px 14px;
-  color: #e74c3c;
+  color: #f39c12;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 16px;

@@ -43,9 +43,9 @@ class CharacterCreateScene extends Phaser.Scene {
       data-group="${groupName}"
       data-color="${color}"
       style="
-        width: 32px; height: 32px; border-radius: 50%;
+        width: 24px; height: 24px; border-radius: 50%;
         background: ${color};
-        border: 2.5px solid ${borderColor};
+        border: 2px solid ${borderColor};
         box-shadow: ${shadow};
         cursor: pointer;
         transition: all 0.2s ease;
@@ -58,7 +58,8 @@ class CharacterCreateScene extends Phaser.Scene {
 
   createCharacterForm() {
     const skinTones = [
-      '#FDEBD3', '#F5D0B0', '#DBA87A', '#C68642', '#8D5524', '#5C3310',
+      '#FDEBD3', '#F5D0B0', '#DBA87A', '#C68642', '#8D5524',
+      '#5C3310', '#3B2106', '#2A1704', '#1A0F02',
     ];
     const hairColors = [
       '#2C1810', '#4A2912', '#8B4513', '#D2691E', '#E8430A',
@@ -82,21 +83,17 @@ class CharacterCreateScene extends Phaser.Scene {
           ${this.buildAvatarHTML()}
         </div>
 
-        <!-- Skin Tone -->
-        <div style="margin-bottom: 14px;">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <label style="color: #bdc3c7; font-size: 13px; min-width: 70px; white-space: nowrap;">Skin tone</label>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <!-- Skin Tone & Hair Color -->
+        <div style="background: rgba(15,52,96,0.35); border: 1px solid rgba(52,152,219,0.15); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;">
+          <div style="margin-bottom: 12px;">
+            <label style="color: #7f8c8d; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;">Skin tone</label>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
               ${skinTones.map(c => this.buildSwatch(c, 'skin', c === this.selectedSkinTone)).join('')}
             </div>
           </div>
-        </div>
-
-        <!-- Hair Color -->
-        <div style="margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <label style="color: #bdc3c7; font-size: 13px; min-width: 70px; white-space: nowrap;">Hair Color</label>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <div>
+            <label style="color: #7f8c8d; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;">Hair Color</label>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
               ${hairColors.map(c => this.buildSwatch(c, 'hair', c === this.selectedHairColor)).join('')}
             </div>
           </div>
@@ -116,8 +113,7 @@ class CharacterCreateScene extends Phaser.Scene {
             <option value="">-- Select Gender --</option>
             <option value="male">Male</option>
             <option value="female" selected>Female</option>
-            <option value="non-binary">Non-binary</option>
-            <option value="prefer-not-to-say">Prefer not to say</option>
+            <option value="other">Other</option>
           </select>
           <div class="form-error" id="gender-error"></div>
         </div>
