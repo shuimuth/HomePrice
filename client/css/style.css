@@ -703,3 +703,246 @@ body {
   margin-bottom: 16px;
   animation: citySlideUp 0.4s ease 0.1s both;
 }
+
+/* ============================================
+   WorkScene - Salary & Expense Reports
+   ============================================ */
+
+/* --- Shared scene-modal title with icon --- */
+.work-report-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #3498db;
+  margin-bottom: 20px;
+  animation: citySlideUp 0.5s ease both;
+}
+
+.work-report-title .title-icon {
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* --- Work summary section header --- */
+.work-section-label {
+  color: #7f8c8d;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  animation: citySlideUp 0.4s ease 0.1s both;
+}
+
+/* --- Work summary stat row --- */
+.work-summary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #ecf0f1;
+  font-size: 14px;
+  margin-bottom: 4px;
+  animation: citySlideUp 0.4s ease 0.15s both;
+}
+
+.work-summary-row strong {
+  font-size: 16px;
+}
+
+.work-summary-row .muted {
+  color: #7f8c8d;
+  font-size: 13px;
+}
+
+/* --- Earnings / Expense card container --- */
+.work-card {
+  background: rgba(15, 52, 96, 0.45);
+  border: 1px solid rgba(52, 152, 219, 0.2);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  animation: citySlideUp 0.5s ease 0.2s both;
+}
+
+.work-card-header {
+  color: #95a5a6;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+
+/* --- Large highlighted amount --- */
+.work-amount-large {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 10px 0 14px;
+  letter-spacing: 0.5px;
+  animation: citySlideUp 0.5s ease 0.25s both;
+}
+
+.work-amount-large.earnings {
+  color: #2ecc71;
+}
+
+.work-amount-large.expense {
+  color: #e74c3c;
+}
+
+.work-amount-large.balance {
+  color: #2ecc71;
+}
+
+/* --- Detail line (base pay, bonus, penalty) --- */
+.work-detail-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.work-detail-line .detail-icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.work-detail-line.base {
+  color: #bdc3c7;
+}
+
+.work-detail-line.bonus {
+  color: #2ecc71;
+}
+
+.work-detail-line.penalty {
+  color: #e67e22;
+}
+
+/* --- Expense ledger row --- */
+.work-ledger {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.work-ledger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(44, 62, 80, 0.5);
+  animation: citySlideUp 0.4s ease both;
+}
+
+.work-ledger-row:last-child {
+  border-bottom: none;
+}
+
+.work-ledger-row .ledger-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #bdc3c7;
+  font-size: 14px;
+}
+
+.work-ledger-row .ledger-label .ledger-icon {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+}
+
+.work-ledger-row .ledger-amount {
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* --- Ledger total divider --- */
+.work-ledger-divider {
+  border: none;
+  border-top: 1px solid rgba(52, 152, 219, 0.25);
+  margin: 6px 0;
+}
+
+/* --- Ledger total row --- */
+.work-ledger-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  animation: citySlideUp 0.4s ease 0.3s both;
+}
+
+.work-ledger-total .total-label {
+  color: #ecf0f1;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.work-ledger-total .total-amount {
+  color: #e74c3c;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+/* --- Paid confirmation center block --- */
+.work-paid-message {
+  color: #ecf0f1;
+  font-size: 17px;
+  line-height: 1.7;
+  margin: 20px 0;
+  text-align: center;
+  animation: citySlideUp 0.5s ease 0.15s both;
+}
+
+.work-paid-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(46, 204, 113, 0.15);
+  border: 2px solid rgba(46, 204, 113, 0.4);
+  font-size: 28px;
+  margin: 0 auto 16px;
+  animation: citySlideUp 0.5s ease 0.1s both;
+}
+
+.work-balance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15, 52, 96, 0.5);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+  border-radius: 10px;
+  padding: 12px 22px;
+  animation: citySlideUp 0.5s ease 0.25s both;
+}
+
+.work-balance-badge .badge-label {
+  color: #95a5a6;
+  font-size: 13px;
+}
+
+.work-balance-badge .badge-value {
+  color: #2ecc71;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* --- Work continue button wrapper --- */
+.work-btn-wrap {
+  margin-top: 20px;
+  animation: citySlideUp 0.5s ease 0.35s both;
+}
+
+.work-btn-wrap .btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 15px;
+}

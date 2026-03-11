@@ -368,6 +368,7 @@ class WorkScene extends Phaser.Scene {
 
     salary = Math.max(0, salary);
     GameState.balance += salary;
+    GameState.salaryHistory.push(salary);
 
     const monthDuration = (Date.now() - this.workStartTime) / 1000;
 
@@ -398,33 +399,48 @@ class WorkScene extends Phaser.Scene {
     const isPenalty = this.completedUnits < cfg.penaltyThreshold;
     const unitLabel = this.getUnitLabel();
 
-    let detailLines = `<p style="color: #bdc3c7; font-size: 14px; margin: 6px 0;">- Base payment: ${cfg.monthlyBaseSalary.toLocaleString()}</p>`;
+    let detailHTML = `
+      <div class="work-detail-line base">
+        <span class="detail-icon">📋</span>
+        <span>Base payment: $${cfg.monthlyBaseSalary.toLocaleString()}</span>
+      </div>`;
     if (isBonus) {
-      detailLines += `<p style="color: #2ecc71; font-size: 14px; margin: 6px 0;">- 🎉 Bonus: +${bonusDeduction.toLocaleString()} (${this.completedUnits - cfg.bonusThreshold} extra units)</p>`;
+      detailHTML += `
+      <div class="work-detail-line bonus">
+        <span class="detail-icon">🎉</span>
+        <span>Bonus: +$${bonusDeduction.toLocaleString()} (${this.completedUnits - cfg.bonusThreshold} extra units)</span>
+      </div>`;
     } else if (isPenalty) {
-      detailLines += `<p style="color: #e67e22; font-size: 14px; margin: 6px 0;">- ⚠️ Penalty: -${bonusDeduction.toLocaleString()} (${cfg.penaltyThreshold - this.completedUnits} ${unitLabel} short)</p>`;
+      detailHTML += `
+      <div class="work-detail-line penalty">
+        <span class="detail-icon">⚠️</span>
+        <span>Penalty: -$${bonusDeduction.toLocaleString()} (${cfg.penaltyThreshold - this.completedUnits} ${unitLabel} short)</span>
+      </div>`;
     }
 
     const container = document.createElement('div');
     container.className = 'modal-backdrop';
     container.innerHTML = `
-      <div class="modal-content" style="max-width: 420px; text-align: left;">
-        <h2 style="text-align: center; margin-bottom: 16px;">💰 Month ${GameState.currentMonth} - Salary</h2>
+      <div class="modal-content" style="max-width: 440px; text-align: left;">
+        <h2 class="work-report-title">
+          <span class="title-icon">💰</span> Month ${GameState.currentMonth} — Salary
+        </h2>
 
-        <div style="margin-bottom: 12px;">
-          <p style="color: #bdc3c7; font-size: 13px;">■ Work Summary:</p>
-          <p style="color: #ecf0f1; margin-top: 6px;">Completed: <strong>${this.completedUnits}</strong> ${unitLabel}  <span style="color: #7f8c8d;">(required: ${cfg.penaltyThreshold} ${unitLabel})</span></p>
+        <div class="work-section-label">Work Summary</div>
+        <div class="work-summary-row">
+          <span>Completed: <strong>${this.completedUnits}</strong> ${unitLabel}</span>
+          <span class="muted">(required: ${cfg.penaltyThreshold})</span>
         </div>
 
-        <div style="background: #16213e; border-radius: 8px; padding: 16px; margin: 12px 0;">
-          <p style="color: #ecf0f1; font-size: 15px; font-weight: bold; margin-bottom: 8px;">Total Earnings:</p>
-          <p style="color: #2ecc71; font-size: 28px; font-weight: bold; text-align: center; margin: 12px 0;">$ ${salary.toLocaleString()}</p>
-          ${detailLines}
+        <div class="work-card">
+          <div class="work-card-header">Total Earnings</div>
+          <div class="work-amount-large earnings">$ ${salary.toLocaleString()}</div>
+          ${detailHTML}
         </div>
 
-        <button class="btn btn-primary" id="salary-continue" style="width: 100%; padding: 12px; margin-top: 12px;">
-          Continue →
-        </button>
+        <div class="work-btn-wrap">
+          <button class="btn btn-primary" id="salary-continue">Continue →</button>
+        </div>
       </div>
     `;
 
@@ -445,7 +461,7 @@ class WorkScene extends Phaser.Scene {
     const rent = Math.round(totalExpense * breakdown.rent);
     const food = Math.round(totalExpense * breakdown.food);
     const transport = Math.round(totalExpense * breakdown.transport);
-    const utilities = totalExpense - rent - food - transport; // remainder
+    const utilities = totalExpense - rent - food - transport;
 
     this.totalExpense = totalExpense;
 
@@ -455,43 +471,46 @@ class WorkScene extends Phaser.Scene {
     const container = document.createElement('div');
     container.className = 'modal-backdrop';
     container.innerHTML = `
-      <div class="modal-content" style="max-width: 420px; text-align: left;">
-        <h2 style="text-align: center; margin-bottom: 16px;">📦 Month ${GameState.currentMonth} - Living Expenses</h2>
+      <div class="modal-content" style="max-width: 440px; text-align: left;">
+        <h2 class="work-report-title">
+          <span class="title-icon">📦</span> Month ${GameState.currentMonth} — Living Expenses
+        </h2>
 
-        <div style="background: #0f3460; border-radius: 8px; padding: 16px; margin: 12px 0;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #bdc3c7;">🏠 Rent</span>
-            <span style="color: #e74c3c; font-weight: bold;">-$${rent}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #bdc3c7;">🍔 Food & Groceries</span>
-            <span style="color: #e74c3c; font-weight: bold;">-$${food}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #bdc3c7;">🚌 Transportation</span>
-            <span style="color: #e74c3c; font-weight: bold;">-$${transport}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <span style="color: #bdc3c7;">💡 Utilities</span>
-            <span style="color: #e74c3c; font-weight: bold;">-$${utilities}</span>
-          </div>
-          <hr style="border-color: #2c3e50; margin: 10px 0;">
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: #ecf0f1; font-weight: bold;">Total Expenses</span>
-            <span style="color: #e74c3c; font-weight: bold; font-size: 18px;">-$${totalExpense}</span>
+        <div class="work-card">
+          <ul class="work-ledger">
+            <li class="work-ledger-row" style="animation-delay: 0.1s;">
+              <span class="ledger-label"><span class="ledger-icon">🏠</span> Rent</span>
+              <span class="ledger-amount">-$${rent}</span>
+            </li>
+            <li class="work-ledger-row" style="animation-delay: 0.15s;">
+              <span class="ledger-label"><span class="ledger-icon">🍔</span> Food & Groceries</span>
+              <span class="ledger-amount">-$${food}</span>
+            </li>
+            <li class="work-ledger-row" style="animation-delay: 0.2s;">
+              <span class="ledger-label"><span class="ledger-icon">🚌</span> Transportation</span>
+              <span class="ledger-amount">-$${transport}</span>
+            </li>
+            <li class="work-ledger-row" style="animation-delay: 0.25s;">
+              <span class="ledger-label"><span class="ledger-icon">💡</span> Utilities</span>
+              <span class="ledger-amount">-$${utilities}</span>
+            </li>
+          </ul>
+          <hr class="work-ledger-divider">
+          <div class="work-ledger-total">
+            <span class="total-label">Total Expenses</span>
+            <span class="total-amount">-$${totalExpense}</span>
           </div>
         </div>
 
-        <button class="btn btn-primary" id="pay-bill-btn" style="width: 100%; padding: 12px; margin-top: 12px; font-size: 16px; font-weight: bold;">
-          Pay My Bill
-        </button>
+        <div class="work-btn-wrap">
+          <button class="btn btn-primary" id="pay-bill-btn" style="font-weight: 700;">Pay My Bill</button>
+        </div>
       </div>
     `;
 
     overlay.appendChild(container);
 
     document.getElementById('pay-bill-btn').addEventListener('click', () => {
-      // Deduct expenses from balance
       GameState.balance -= totalExpense;
       this.showPaidConfirmation();
     });
@@ -504,22 +523,24 @@ class WorkScene extends Phaser.Scene {
     const container = document.createElement('div');
     container.className = 'modal-backdrop';
     container.innerHTML = `
-      <div class="modal-content" style="max-width: 420px; text-align: center;">
-        <h2 style="margin-bottom: 16px;">📦 Month ${GameState.currentMonth} - Living Expenses</h2>
+      <div class="modal-content" style="max-width: 440px; text-align: center;">
+        <h2 class="work-report-title">
+          <span class="title-icon">📦</span> Month ${GameState.currentMonth} — Living Expenses
+        </h2>
 
-        <p style="color: #ecf0f1; font-size: 18px; margin: 24px 0; line-height: 1.6;">
+        <div class="work-paid-check">✓</div>
+
+        <p class="work-paid-message">
           Living expenses for month ${GameState.currentMonth}<br>have been paid!
         </p>
 
-        <div style="background: #16213e; border-radius: 8px; padding: 12px 20px; margin: 16px auto; display: inline-block;">
-          <span style="color: #bdc3c7; font-size: 14px;">Remaining Balance: </span>
-          <span style="color: #2ecc71; font-size: 18px; font-weight: bold;">$${GameState.balance.toLocaleString()}</span>
+        <div class="work-balance-badge">
+          <span class="badge-label">Remaining Balance</span>
+          <span class="badge-value">$${GameState.balance.toLocaleString()}</span>
         </div>
 
-        <div style="margin-top: 20px;">
-          <button class="btn btn-primary" id="expense-continue" style="width: 100%; padding: 12px;">
-            Continue →
-          </button>
+        <div class="work-btn-wrap">
+          <button class="btn btn-primary" id="expense-continue">Continue →</button>
         </div>
       </div>
     `;
@@ -528,7 +549,6 @@ class WorkScene extends Phaser.Scene {
 
     document.getElementById('expense-continue').addEventListener('click', () => {
       overlay.innerHTML = '';
-      // Go to house price display
       this.scene.start('HousePriceScene');
     });
   }
