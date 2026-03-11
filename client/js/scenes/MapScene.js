@@ -1539,27 +1539,28 @@ class MapScene extends Phaser.Scene {
       color: '#2ecc71',
     }).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
 
-    this.controlsHint = this.add.text(16, cam.height - 20, 'WASD/Arrows: Move | E: Enter house | Visit all 8 houses to continue', {
-      fontSize: '10px',
-      color: '#95a5a6',
-      stroke: '#000',
-      strokeThickness: 2,
-    }).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
+    this.controlsHint = this.add.text(16, cam.height - 22, 'WASD / Arrows: Move    E: Enter house    Visit all 8 houses to continue', {
+      fontSize: '11px',
+      fontFamily: 'Segoe UI, sans-serif',
+      color: '#8899aa',
+      stroke: '#0a0f1a',
+      strokeThickness: 3,
+      letterSpacing: 0.5,
+    }).setScrollFactor(0).setDepth(DEPTH.HUD + 1).setAlpha(0.75);
 
-    this.continueBtn = { btnW: 120, btnH: 32 };
+    this.continueBtn = { btnW: 140, btnH: 36 };
     this.continueBtn.btnX = cam.width - this.continueBtn.btnW - 16;
-    this.continueBtn.btnY = cam.height - this.continueBtn.btnH - 12;
+    this.continueBtn.btnY = cam.height - this.continueBtn.btnH - 14;
     const { btnW, btnH, btnX, btnY } = this.continueBtn;
 
     this.continueBtnBg = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.HUD);
-    this.continueBtnBg.fillStyle(0x34495e, 0.6);
-    this.continueBtnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
+    this.continueBtnBg.fillStyle(0x2c3e50, 0.5);
+    this.continueBtnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 8);
 
     this.continueBtnText = this.add.text(btnX + btnW / 2, btnY + btnH / 2, '🔒 Visit all 8 houses', {
       fontSize: '11px',
       fontFamily: 'Segoe UI, sans-serif',
       color: '#7f8c8d',
-      fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
 
     this.continueBtnZone = this.add.zone(btnX + btnW / 2, btnY + btnH / 2, btnW, btnH)
@@ -1664,7 +1665,7 @@ class MapScene extends Phaser.Scene {
     const { btnW, btnH, btnX, btnY } = this.continueBtn;
     this.continueBtnBg.clear();
     this.continueBtnBg.fillStyle(color, 1);
-    this.continueBtnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 6);
+    this.continueBtnBg.fillRoundedRect(btnX, btnY, btnW, btnH, 8);
     this.continueBtnBg.setVisible(true);
   }
 
@@ -1673,34 +1674,42 @@ class MapScene extends Phaser.Scene {
     this.continueBtnText.setText('Continue →');
     this.continueBtnText.setColor('#ffffff');
     this.continueBtnText.setFontSize('13px');
+    this.continueBtnText.setFontStyle('bold');
     this.continueBtnZone.input.cursor = 'pointer';
 
-    this.continueBtnZone.on('pointerover', () => this.drawContinueBtn(0x1e8449));
-    this.continueBtnZone.on('pointerout', () => this.drawContinueBtn(0x27ae60));
+    this.continueBtnZone.on('pointerover', () => {
+      this.drawContinueBtn(0x2ecc71);
+      this.continueBtnText.setFontSize('14px');
+    });
+    this.continueBtnZone.on('pointerout', () => {
+      this.drawContinueBtn(0x27ae60);
+      this.continueBtnText.setFontSize('13px');
+    });
 
     if (this.controlsHint) {
-      this.controlsHint.setText('WASD/Arrows: Move | E: Enter house | ESC or Continue → to proceed');
+      this.controlsHint.setText('WASD / Arrows: Move    E: Enter house    Continue → to proceed');
     }
 
     this.tweens.add({
       targets: [this.continueBtnBg, this.continueBtnText],
-      alpha: { from: 0.6, to: 1 },
-      duration: 500,
+      alpha: { from: 0.5, to: 1 },
+      duration: 600,
+      ease: 'Sine.easeInOut',
       yoyo: true,
-      repeat: 3,
+      repeat: 2,
     });
   }
 
   showAllVisitedToast() {
     const cam = this.cameras.main;
-    const toast = this.add.text(cam.width / 2, cam.height / 2, '✅ All houses visited!\nYou may now continue.', {
-      fontSize: '18px',
+    const toast = this.add.text(cam.width / 2, cam.height / 2, '✅  All houses visited!\nYou may now continue.', {
+      fontSize: '16px',
       fontFamily: 'Segoe UI, sans-serif',
-      color: '#ffffff',
+      color: '#2ecc71',
       fontStyle: 'bold',
       align: 'center',
-      backgroundColor: 'rgba(39,174,96,0.85)',
-      padding: { x: 24, y: 16 },
+      backgroundColor: 'rgba(13, 27, 62, 0.92)',
+      padding: { x: 28, y: 18 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.TOAST).setAlpha(0);
 
     this.tweens.add({
