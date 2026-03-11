@@ -108,7 +108,7 @@ class JobSelectScene extends Phaser.Scene {
       finance:    { unit: 'profit sheets', verb: 'left-click the mouse' },
     };
     const flavor = jobFlavor[jobType] || jobFlavor.restaurant;
-    const totalWork = requiredUnits * cfg.clicksPerTaskUnit * 10;
+    const totalWork = requiredUnits;
 
     const overlay = document.getElementById('ui-overlay');
     overlay.innerHTML = '';
