@@ -117,39 +117,54 @@ class JobSelectScene extends Phaser.Scene {
     container.className = 'modal-backdrop';
     container.innerHTML = `
       <div class="modal-content" style="max-width: 520px; padding: 28px 32px; text-align: left;">
-        <h2 style="text-align: center; color: #3498db; margin-bottom: 24px; font-style: italic;">Job Overview: Your Tasks</h2>
+        <h2 class="job-overview-title">Job Overview: Your Tasks</h2>
 
-        <div style="color: #bdc3c7; font-size: 14px; line-height: 1.9;">
-          <p style="margin-bottom: 14px;">
-            <strong style="color: #ecf0f1;">● Task:</strong><br>
-            <span style="padding-left: 16px;">- Continuously <span style="color: #f39c12; text-decoration: underline;">${flavor.verb}</span> 🖱️ to complete work units.</span><br>
-            <span style="padding-left: 16px;">- A progress bar will show your progress in real time.</span>
-          </p>
+        <ul class="job-overview-list">
+          <li class="job-overview-item" style="animation-delay: 0.1s;">
+            <span class="ov-icon">🖱️</span>
+            <div class="ov-body">
+              <div class="ov-label">Task</div>
+              <div class="ov-desc">
+                Continuously <span class="accent-warn">${flavor.verb}</span> to complete work units.<br>
+                A progress bar will show your progress in real time.
+              </div>
+            </div>
+          </li>
+          <li class="job-overview-item" style="animation-delay: 0.2s;">
+            <span class="ov-icon">📋</span>
+            <div class="ov-body">
+              <div class="ov-label">Required Work</div>
+              <div class="ov-desc">${totalWork} ${flavor.unit} (${totalClicks} clicks) / month</div>
+            </div>
+          </li>
+          <li class="job-overview-item" style="animation-delay: 0.3s;">
+            <span class="ov-icon">💰</span>
+            <div class="ov-body">
+              <div class="ov-label">Base Payment</div>
+              <div class="ov-desc"><span class="accent-warn">$${salary.toLocaleString()}</span> / month</div>
+            </div>
+          </li>
+          <li class="job-overview-item" style="animation-delay: 0.4s;">
+            <span class="ov-icon">⚠️</span>
+            <div class="ov-body">
+              <div class="ov-label">Penalty</div>
+              <div class="ov-desc"><span class="accent-red">-$${penalty}</span> for each unfinished work unit</div>
+            </div>
+          </li>
+          <li class="job-overview-item" style="animation-delay: 0.5s;">
+            <span class="ov-icon">🎉</span>
+            <div class="ov-body">
+              <div class="ov-label">Bonus</div>
+              <div class="ov-desc"><span class="accent-green">+$${bonus}</span> for each extra work unit completed</div>
+            </div>
+          </li>
+        </ul>
 
-          <p style="margin-bottom: 10px;">
-            <strong style="color: #ecf0f1;">● Required work amount:</strong>
-            ${totalWork} ${flavor.unit} (${totalClicks} clicks) / month
-          </p>
-
-          <p style="margin-bottom: 10px;">
-            <strong style="color: #ecf0f1;">● Base payment:</strong>
-            <span style="color: #f39c12;">$${salary.toLocaleString()}</span> / month
-          </p>
-
-          <p style="margin-bottom: 10px;">
-            <strong style="color: #ecf0f1;">● Penalty:</strong>
-            <span style="color: #e74c3c;">-$${penalty}</span> for each unfinished work unit
-          </p>
-
-          <p style="margin-bottom: 6px;">
-            <strong style="color: #ecf0f1;">● Bonus:</strong>
-            <span style="color: #2ecc71;">+$${bonus}</span> for each additional work unit completed
-          </p>
+        <div class="work-btn-wrap" style="margin-top: 16px;">
+          <button class="btn btn-primary" id="overview-start" style="font-size: 16px; font-weight: 700;">
+            Start working!
+          </button>
         </div>
-
-        <button class="btn btn-primary" id="overview-start" style="width: 100%; padding: 14px; margin-top: 24px; font-size: 16px; font-weight: bold;">
-          Start working!
-        </button>
       </div>
     `;
 
