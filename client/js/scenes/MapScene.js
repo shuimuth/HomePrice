@@ -41,6 +41,11 @@ class MapScene extends Phaser.Scene {
     this.isInsideHouse = false;
     this._tweenables = [];
     this._facing = 'down';
+    this._idleTime = 0;
+    this._lastPlayerX = 0;
+    this._lastPlayerY = 0;
+    this._idleArrow = null;
+    this._idleArrowShown = false;
 
     this.areaPrices = this.generateAreaPrices();
 
@@ -86,6 +91,8 @@ class MapScene extends Phaser.Scene {
 
     this.events.on('resume', () => {
       this.isInsideHouse = false;
+      this._idleTime = 0;
+      this._hideIdleArrow();
       this.cameras.main.setZoom(1);
       this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
       this.updateHUD();
@@ -1311,6 +1318,31 @@ class MapScene extends Phaser.Scene {
         ease: 'Sine.easeInOut',
       });
 
+      // Glow pillar — vertical light beam above unvisited house
+      const pillarH = def.tier === 'high' ? 60 : def.tier === 'mid' ? 50 : 40;
+      const pillarW = 16;
+      const pillarColor = { high: 0x64B5F6, mid: 0x81C784, low: 0xFFB74D }[def.tier];
+      const glowPillar = this.add.graphics().setDepth(depth - 2).setAlpha(0.6);
+      for (let strip = 0; strip < 5; strip++) {
+        const sw = pillarW + strip * 8;
+        const a = 0.15 - strip * 0.03;
+        glowPillar.fillStyle(pillarColor, a);
+        glowPillar.fillRect(def.x - sw / 2, by - pillarH - strip * 4, sw, pillarH + strip * 4);
+      }
+      glowPillar.fillStyle(pillarColor, 0.25);
+      glowPillar.fillRect(def.x - pillarW / 2, by - pillarH, pillarW, pillarH);
+      glowPillar.fillStyle(0xffffff, 0.12);
+      glowPillar.fillRect(def.x - 3, by - pillarH, 6, pillarH);
+
+      const glowTween = this.tweens.add({
+        targets: glowPillar,
+        alpha: { from: 0.35, to: 0.7 },
+        duration: 1500 + Math.random() * 500,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+
       // Highlight glow for proximity — breathing pulse
       const highlightG = this.add.graphics().setDepth(depth - 1).setVisible(false);
       highlightG.lineStyle(3, 0x3498db, 0.5);
@@ -1323,7 +1355,7 @@ class MapScene extends Phaser.Scene {
       houses.push({
         def, areaData, triggerZone, visitMark,
         unvisitedMark, unvisitedTween, highlightG,
-        buildingG, doorSprite,
+        buildingG, doorSprite, glowPillar, glowTween,
       });
     });
 
@@ -1516,10 +1548,20 @@ class MapScene extends Phaser.Scene {
   // ===== HUD =====
   createHUD() {
     const cam = this.cameras.main;
+    const areaIcons = ['🏢', '🏬', '🏘️', '🌳', '🚉', '🌆', '🌊', '🏛️'];
+    const areaIds = ['downtown', 'midtown', 'eastside', 'westpark', 'northgate', 'southview', 'lakefront', 'oldquarter'];
+
+    const dotStartX = 24;
+    const dotY = 42;
+    const dotR = 8;
+    const dotSpacing = 20;
+    const dotsEndX = dotStartX + 7 * dotSpacing + dotR;
+    const labelGap = 6;
+    const hudW = dotsEndX + labelGap + 30 + 8;
 
     this.hudBg = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.HUD);
     this.hudBg.fillStyle(0x000000, 0.5);
-    this.hudBg.fillRoundedRect(8, 8, 220, 60, 8);
+    this.hudBg.fillRoundedRect(8, 8, hudW, 68, 8);
 
     this.hudTitle = this.add.text(16, 14, '🗺️ Explore Valrenta City', {
       fontSize: '13px',
@@ -1528,13 +1570,25 @@ class MapScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
 
-    this.hudProgress = this.add.text(16, 34, 'Houses visited: 0 / 8', {
-      fontSize: '12px',
-      fontFamily: 'Segoe UI, sans-serif',
-      color: '#bdc3c7',
-    }).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
+    this.hudDots = [];
+    for (let i = 0; i < 8; i++) {
+      const dx = dotStartX + i * dotSpacing;
+      const bg = this.add.circle(dx, dotY, dotR, 0x2c3e50, 0.6)
+        .setScrollFactor(0).setDepth(DEPTH.HUD + 1);
+      const icon = this.add.text(dx, dotY, areaIcons[i], {
+        fontSize: '9px',
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.HUD + 2).setAlpha(0.4);
+      this.hudDots.push({ bg, icon, id: areaIds[i] });
+    }
 
-    this.hudBalance = this.add.text(16, 50, `Balance: $${GameState.balance.toLocaleString()}`, {
+    this.hudProgressLabel = this.add.text(dotsEndX + labelGap, dotY, '0/8', {
+      fontSize: '11px',
+      fontFamily: 'Segoe UI, sans-serif',
+      color: '#7f8c8d',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
+
+    this.hudBalance = this.add.text(20, 55, `Balance: $${GameState.balance.toLocaleString()}`, {
       fontSize: '11px',
       color: '#2ecc71',
     }).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
@@ -1575,7 +1629,34 @@ class MapScene extends Phaser.Scene {
 
   updateHUD() {
     const count = this.visitedHouses.size;
-    this.hudProgress.setText(`Houses visited: ${count} / 8`);
+    this.hudProgressLabel.setText(`${count}/8`);
+    if (count >= 8) {
+      this.hudProgressLabel.setColor('#2ecc71');
+    } else if (count >= 4) {
+      this.hudProgressLabel.setColor('#f39c12');
+    }
+
+    for (const dot of this.hudDots) {
+      if (this.visitedHouses.has(dot.id) && !dot._done) {
+        dot._done = true;
+        dot.bg.setFillStyle(0x27ae60, 0.9);
+        dot.icon.setAlpha(1);
+        this.tweens.add({
+          targets: [dot.bg, dot.icon],
+          scaleX: 1.4,
+          scaleY: 1.4,
+          duration: 150,
+          yoyo: true,
+          ease: 'Back.easeOut',
+        });
+      }
+    }
+
+    if (!this._continueUnlocked) {
+      const remaining = 8 - count;
+      this.continueBtnText.setText(`🔒 ${remaining} house${remaining !== 1 ? 's' : ''} left`);
+    }
+
     this.updateMinimap();
 
     if (this.allVisited() && !this._continueUnlocked) {
@@ -1628,16 +1709,33 @@ class MapScene extends Phaser.Scene {
     this._mmPlayerDot.setStrokeStyle(1, 0xffffff, 0.8);
 
     this._mmViewRect = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.MINIMAP + 2);
+    this._mmGuideLine = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.MINIMAP + 2);
+    this._mmGuidePhase = 0;
+  }
+
+  _findNearestUnvisited() {
+    let best = null;
+    let bestDist = Infinity;
+    for (const house of this.houses) {
+      if (this.visitedHouses.has(house.def.id)) continue;
+      const dx = this.player.x - house.def.x;
+      const dy = this.player.y - house.def.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = house;
+      }
+    }
+    return best;
   }
 
   updateMinimap() {
     if (!this._mm) return;
     const { x: mmX, y: mmY, scaleX, scaleY } = this._mm;
 
-    this._mmPlayerDot.setPosition(
-      mmX + this.player.x * scaleX,
-      mmY + this.player.y * scaleY
-    );
+    const playerMmX = mmX + this.player.x * scaleX;
+    const playerMmY = mmY + this.player.y * scaleY;
+    this._mmPlayerDot.setPosition(playerMmX, playerMmY);
 
     this._mmHouseDots.forEach(item => {
       item.dot.setFillStyle(
@@ -1645,6 +1743,35 @@ class MapScene extends Phaser.Scene {
         this.visitedHouses.has(item.id) ? 0.6 : 0.8
       );
     });
+
+    this._mmGuideLine.clear();
+    const nearest = this._findNearestUnvisited();
+    if (nearest) {
+      const targetMmX = mmX + nearest.def.x * scaleX;
+      const targetMmY = mmY + nearest.def.y * scaleY;
+      this._mmGuidePhase = (this._mmGuidePhase + 0.04) % (Math.PI * 2);
+      const dashLen = 4;
+      const gapLen = 3;
+      const dx = targetMmX - playerMmX;
+      const dy = targetMmY - playerMmY;
+      const totalLen = Math.sqrt(dx * dx + dy * dy);
+      if (totalLen > 8) {
+        const nx = dx / totalLen;
+        const ny = dy / totalLen;
+        const pulseAlpha = 0.3 + 0.2 * Math.sin(this._mmGuidePhase);
+        this._mmGuideLine.lineStyle(1, 0xf39c12, pulseAlpha);
+        let traveled = 3;
+        while (traveled < totalLen - 3) {
+          const x1 = playerMmX + nx * traveled;
+          const y1 = playerMmY + ny * traveled;
+          const end = Math.min(traveled + dashLen, totalLen - 3);
+          const x2 = playerMmX + nx * end;
+          const y2 = playerMmY + ny * end;
+          this._mmGuideLine.lineBetween(x1, y1, x2, y2);
+          traveled = end + gapLen;
+        }
+      }
+    }
 
     const cam = this.cameras.main;
     this._mmViewRect.clear();
@@ -1749,6 +1876,16 @@ class MapScene extends Phaser.Scene {
         ease: 'Power2',
         onComplete: () => { house.unvisitedMark.destroy(); house.unvisitedMark = null; },
       });
+    }
+
+    if (house.glowPillar) {
+      this.tweens.add({
+        targets: house.glowPillar,
+        alpha: 0,
+        duration: 300,
+        onComplete: () => { house.glowPillar.destroy(); house.glowPillar = null; },
+      });
+      if (house.glowTween) { house.glowTween.stop(); house.glowTween = null; }
     }
 
     if (house.buildingG) {
@@ -1892,6 +2029,7 @@ class MapScene extends Phaser.Scene {
     this.updateMinimap();
     this.cullTweens();
     this.checkHouseProximity();
+    this.updateIdleHint(delta, vx, vy);
   }
 
   updateNPCs(delta) {
@@ -2020,6 +2158,101 @@ class MapScene extends Phaser.Scene {
     if (this.currentNearHouse) {
       this.positionPrompt(this.currentNearHouse);
     }
+  }
+
+  updateIdleHint(delta, vx, vy) {
+    if (this.allVisited()) {
+      this._hideIdleArrow();
+      return;
+    }
+
+    const moving = vx !== 0 || vy !== 0;
+    if (moving) {
+      this._idleTime = 0;
+      if (this._idleArrowShown) this._hideIdleArrow();
+      return;
+    }
+
+    this._idleTime += delta;
+
+    if (this._idleTime > 10000 && !this._idleArrowShown) {
+      this._idleArrowShown = true;
+      const nearest = this._findNearestUnvisited();
+      if (!nearest) return;
+
+      const cam = this.cameras.main;
+      const screenCX = cam.width / 2;
+      const screenCY = cam.height / 2;
+      const targetScreenX = nearest.def.x - cam.scrollX;
+      const targetScreenY = nearest.def.y - cam.scrollY;
+      const dx = targetScreenX - screenCX;
+      const dy = targetScreenY - screenCY;
+      const angle = Math.atan2(dy, dx);
+
+      const margin = 40;
+      const edgeX = screenCX + Math.cos(angle) * (cam.width / 2 - margin);
+      const edgeY = screenCY + Math.sin(angle) * (cam.height / 2 - margin);
+      const clampedX = Phaser.Math.Clamp(edgeX, margin, cam.width - margin);
+      const clampedY = Phaser.Math.Clamp(edgeY, margin, cam.height - margin);
+
+      const arrowG = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.TOAST - 1);
+      arrowG.fillStyle(0xf39c12, 0.8);
+      arrowG.beginPath();
+      arrowG.moveTo(0, -10);
+      arrowG.lineTo(8, 6);
+      arrowG.lineTo(-8, 6);
+      arrowG.closePath();
+      arrowG.fillPath();
+      arrowG.fillStyle(0xffffff, 0.3);
+      arrowG.fillTriangle(0, -7, 4, 3, -4, 3);
+      arrowG.setPosition(clampedX, clampedY);
+      arrowG.setRotation(angle + Math.PI / 2);
+      arrowG.setAlpha(0);
+
+      const label = this.add.text(clampedX, clampedY + 16, nearest.areaData.name, {
+        fontSize: '9px',
+        fontFamily: 'Segoe UI, sans-serif',
+        color: '#f39c12',
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 2,
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH.TOAST - 1).setAlpha(0);
+
+      this._idleArrow = { gfx: arrowG, label };
+
+      this.tweens.add({
+        targets: [arrowG, label],
+        alpha: 1,
+        duration: 400,
+        ease: 'Power2',
+      });
+
+      this.tweens.add({
+        targets: arrowG,
+        scaleX: { from: 0.8, to: 1.1 },
+        scaleY: { from: 0.8, to: 1.1 },
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  _hideIdleArrow() {
+    if (!this._idleArrow) return;
+    const { gfx, label } = this._idleArrow;
+    this.tweens.add({
+      targets: [gfx, label],
+      alpha: 0,
+      duration: 200,
+      onComplete: () => {
+        gfx.destroy();
+        label.destroy();
+      },
+    });
+    this._idleArrow = null;
+    this._idleArrowShown = false;
   }
 
   showPrompt(house) {
