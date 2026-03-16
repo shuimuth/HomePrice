@@ -466,7 +466,64 @@ class HousePriceScene extends Phaser.Scene {
 
     document.getElementById('final-summary-continue').addEventListener('click', () => {
       overlay.innerHTML = '';
-      this.scene.start('LotteryScene');
+      this.showExplorePrompt();
+    });
+  }
+
+  showExplorePrompt() {
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 480px; padding: 44px 40px; text-align: center;">
+        <div style="
+          width: 64px; height: 64px; border-radius: 50%;
+          background: rgba(243, 156, 18, 0.12);
+          border: 1px solid rgba(243, 156, 18, 0.3);
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 24px;
+          font-size: 30px;
+          animation: citySlideUp 0.4s ease both;
+        ">🗺️</div>
+
+        <p style="
+          font-size: 20px; line-height: 1.7; color: #ecf0f1; margin: 0 0 8px;
+          animation: citySlideUp 0.5s ease 0.1s both;
+        ">
+          Now, check the
+          <span style="
+            color: #f39c12; font-weight: 700;
+            background-image: linear-gradient(#f39c12, #f39c12);
+            background-position: 0 100%;
+            background-size: 100% 2px;
+            background-repeat: no-repeat;
+            padding-bottom: 3px;
+          ">housing market</span>
+          on the city map again.
+        </p>
+
+        <p style="
+          color: #7f8c8d; font-size: 13px; margin: 0 0 32px;
+          animation: citySlideUp 0.5s ease 0.2s both;
+        ">Feel free to revisit the city map and check the latest prices.<br>Press Continue whenever you're ready to move on.</p>
+
+        <div style="animation: citySlideUp 0.5s ease 0.3s both;">
+          <button class="btn btn-primary btn-cta" id="explore-map-btn" style="
+            font-size: 16px; padding: 14px 48px; width: 100%;
+          ">
+            Explore the City Map →
+          </button>
+        </div>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('explore-map-btn').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      this.scene.start('MapScene', { returnScene: 'LotteryScene' });
     });
   }
 }

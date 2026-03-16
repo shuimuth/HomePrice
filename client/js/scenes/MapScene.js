@@ -47,6 +47,10 @@ class MapScene extends Phaser.Scene {
     this._idleArrow = null;
     this._idleArrowShown = false;
 
+    const sceneData = this.scene.settings.data || {};
+    this._returnScene = sceneData.returnScene || 'JobSelectScene';
+    this._freeExplore = this._returnScene !== 'JobSelectScene';
+
     this.areaPrices = this.generateAreaPrices();
 
     this.housePositions = [
@@ -101,6 +105,11 @@ class MapScene extends Phaser.Scene {
         this.showAllVisitedToast();
       }
     });
+
+    if (this._freeExplore) {
+      this._continueUnlocked = true;
+      this.unlockContinueButton();
+    }
   }
 
   // ===== Ambient Lighting — warm evening color overlay =====
@@ -1539,7 +1548,7 @@ class MapScene extends Phaser.Scene {
     });
 
     this.keyESC.on('down', () => {
-      if (!this.isInsideHouse && this.allVisited()) {
+      if (!this.isInsideHouse && (this._freeExplore || this.allVisited())) {
         this.exitMap();
       }
     });
@@ -1621,7 +1630,7 @@ class MapScene extends Phaser.Scene {
       .setScrollFactor(0).setDepth(DEPTH.HUD + 2).setInteractive({ useHandCursor: false });
 
     this.continueBtnZone.on('pointerdown', () => {
-      if (this.allVisited()) {
+      if (this._freeExplore || this.allVisited()) {
         this.exitMap();
       }
     });
@@ -1972,7 +1981,7 @@ class MapScene extends Phaser.Scene {
   }
 
   exitMap() {
-    this.scene.start('JobSelectScene');
+    this.scene.start(this._returnScene || 'JobSelectScene');
   }
 
   // ===== Walk Animation — sprite-based frame animation =====
