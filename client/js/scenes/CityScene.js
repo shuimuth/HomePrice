@@ -72,15 +72,42 @@ class CityScene extends Phaser.Scene {
     const container = document.createElement('div');
     container.className = 'modal-backdrop';
     container.innerHTML = `
-      <div class="modal-content" style="max-width: 480px; padding: 40px 36px; text-align: center;">
-        <p style="font-size: 20px; line-height: 1.6; color: #ecf0f1; margin: 0;">
-          Now, please explore the
-          <span style="color: #e67e22; font-weight: bold; text-decoration: underline;">purchasable housing
-          properties</span> on the city map.
+      <div class="modal-content" style="max-width: 480px; padding: 44px 40px; text-align: center;">
+        <div style="
+          width: 64px; height: 64px; border-radius: 50%;
+          background: rgba(230, 126, 34, 0.12);
+          border: 1px solid rgba(230, 126, 34, 0.3);
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 24px;
+          font-size: 30px;
+          animation: citySlideUp 0.4s ease both;
+        ">🗺️</div>
+
+        <p style="
+          font-size: 20px; line-height: 1.7; color: #ecf0f1; margin: 0 0 8px;
+          animation: citySlideUp 0.5s ease 0.1s both;
+        ">
+          Now, please explore the<br>
+          <span style="
+            color: #e67e22; font-weight: 700;
+            background-image: linear-gradient(#e67e22, #e67e22);
+            background-position: 0 100%;
+            background-size: 100% 2px;
+            background-repeat: no-repeat;
+            padding-bottom: 3px;
+          ">purchasable housing properties</span><br>
+          on the city map.
         </p>
 
-        <div style="margin-top: 32px;">
-          <button class="btn btn-primary btn-cta" id="explore-start" style="font-size: 16px; padding: 12px 40px;">
+        <p style="
+          color: #7f8c8d; font-size: 13px; margin: 0 0 32px;
+          animation: citySlideUp 0.5s ease 0.2s both;
+        ">Visit all 8 neighborhoods to compare prices and locations.</p>
+
+        <div style="animation: citySlideUp 0.5s ease 0.3s both;">
+          <button class="btn btn-primary btn-cta" id="explore-start" style="
+            font-size: 16px; padding: 14px 48px; width: 100%;
+          ">
             Start Exploring →
           </button>
         </div>
