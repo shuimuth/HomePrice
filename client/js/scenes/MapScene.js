@@ -1972,7 +1972,7 @@ class MapScene extends Phaser.Scene {
   }
 
   exitMap() {
-    this.scene.start('CityScene');
+    this.scene.start('JobSelectScene');
   }
 
   // ===== Walk Animation — sprite-based frame animation =====

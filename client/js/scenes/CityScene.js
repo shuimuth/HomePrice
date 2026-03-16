@@ -61,15 +61,38 @@ class CityScene extends Phaser.Scene {
   showIntroStep2() {
     this.showCurrentHousing(
       () => this.showIntroStep1(),
-      () => this.showIntroStep3()
+      () => this.showExploreHousing()
     );
   }
 
-  showIntroStep3() {
-    this.showNextMonths(
-      () => this.showIntroStep2(),
-      () => this.scene.start('JobSelectScene')
-    );
+  showExploreHousing() {
+    const overlay = document.getElementById('ui-overlay');
+    overlay.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.className = 'modal-backdrop';
+    container.innerHTML = `
+      <div class="modal-content" style="max-width: 480px; padding: 40px 36px; text-align: center;">
+        <p style="font-size: 20px; line-height: 1.6; color: #ecf0f1; margin: 0;">
+          Now, please explore the
+          <span style="color: #e67e22; font-weight: bold; text-decoration: underline;">purchasable housing
+          properties</span> on the city map.
+        </p>
+
+        <div style="margin-top: 32px;">
+          <button class="btn btn-primary btn-cta" id="explore-start" style="font-size: 16px; padding: 12px 40px;">
+            Start Exploring →
+          </button>
+        </div>
+      </div>
+    `;
+
+    overlay.appendChild(container);
+
+    document.getElementById('explore-start').addEventListener('click', () => {
+      overlay.innerHTML = '';
+      this.scene.start('MapScene');
+    });
   }
 
   showCurrentState(callback) {
@@ -189,53 +212,6 @@ class CityScene extends Phaser.Scene {
     });
 
     document.getElementById('housing-next').addEventListener('click', () => {
-      overlay.innerHTML = '';
-      onNext();
-    });
-  }
-
-  showNextMonths(onPrevious, onNext) {
-    const overlay = document.getElementById('ui-overlay');
-    overlay.innerHTML = '';
-
-    const container = document.createElement('div');
-    container.className = 'modal-backdrop';
-    container.innerHTML = `
-      <div class="modal-content" style="max-width: 500px; padding: 32px 36px;">
-        <h2 class="city-intro-title" style="color: #3498db;">Over the next few months...</h2>
-
-        <ul class="city-steps">
-          <li style="animation-delay: 0.15s;">
-            <span class="step-icon">🔍</span>
-            <span>Find a job in the city</span>
-          </li>
-          <li style="animation-delay: 0.25s;">
-            <span class="step-icon">💼</span>
-            <span>Work hard and get paid monthly</span>
-          </li>
-          <li style="animation-delay: 0.35s;">
-            <span class="step-icon">🏡</span>
-            <span>Save up and build your life here</span>
-          </li>
-        </ul>
-
-        <div class="city-btn-row">
-          <button class="btn btn-secondary" id="months-prev">Previous</button>
-          <button class="btn btn-primary btn-cta" id="months-next">
-            Got it — Start finding a job!
-          </button>
-        </div>
-      </div>
-    `;
-
-    overlay.appendChild(container);
-
-    document.getElementById('months-prev').addEventListener('click', () => {
-      overlay.innerHTML = '';
-      onPrevious();
-    });
-
-    document.getElementById('months-next').addEventListener('click', () => {
       overlay.innerHTML = '';
       onNext();
     });
