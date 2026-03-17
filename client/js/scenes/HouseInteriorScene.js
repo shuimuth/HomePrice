@@ -26,6 +26,20 @@ class HouseInteriorScene extends Phaser.Scene {
     const overlay = document.getElementById('ui-overlay');
     overlay.innerHTML = '';
 
+    const affordRatio = d.balance / d.price;
+    let affordColor, affordText;
+    if (affordRatio >= 1) {
+      affordColor = '#2ecc71';
+      affordText = 'You can afford this!';
+    } else if (affordRatio >= 0.3) {
+      affordColor = '#f39c12';
+      affordText = 'Getting closer...';
+    } else {
+      affordColor = '#e74c3c';
+      affordText = 'Still a long way to go';
+    }
+    const progressPct = Math.min(100, (affordRatio * 100)).toFixed(1);
+
     const tierLabel = {
       high: { text: 'Premium', color: '#f39c12', bg: '#5a3e00' },
       mid:  { text: 'Standard', color: '#3498db', bg: '#0d3b66' },
@@ -127,6 +141,33 @@ class HouseInteriorScene extends Phaser.Scene {
               style="width:100%; display:block; object-fit:cover; max-height:220px;" />
           </div>
 
+          <!-- Affordability -->
+          <div style="background: #16213e; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="color: #95a5a6; font-size: 12px;">Your Balance</span>
+              <span style="color: #2ecc71; font-size: 16px; font-weight: bold;">$${d.balance.toLocaleString()}</span>
+            </div>
+            <div style="
+              background: #0a0a2a;
+              border-radius: 6px;
+              height: 10px;
+              overflow: hidden;
+              margin-bottom: 8px;
+            ">
+              <div style="
+                width: ${progressPct}%;
+                height: 100%;
+                background: ${affordColor};
+                border-radius: 6px;
+                transition: width 0.5s ease;
+              "></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: ${affordColor}; font-size: 12px; font-weight: bold;">${affordText}</span>
+              <span style="color: #7f8c8d; font-size: 11px;">${progressPct}% of price</span>
+            </div>
+          </div>
+
           <!-- Buy prompt -->
           <div style="text-align: center; margin-bottom: 12px; color: #ecf0f1; font-size: 16px; font-weight: bold;">
             Can you buy this house now?
@@ -173,12 +214,6 @@ class HouseInteriorScene extends Phaser.Scene {
   showCantAffordPopup() {
     const d = this.houseData;
     const shortage = d.price - d.balance;
-    const affordRatio = d.balance / d.price;
-    const progressPct = Math.min(100, (affordRatio * 100)).toFixed(1);
-    let affordColor;
-    if (affordRatio >= 1) affordColor = '#2ecc71';
-    else if (affordRatio >= 0.3) affordColor = '#f39c12';
-    else affordColor = '#e74c3c';
 
     const popup = document.createElement('div');
     popup.id = 'cant-afford-popup';
@@ -194,32 +229,13 @@ class HouseInteriorScene extends Phaser.Scene {
         border-radius: 12px;
         padding: 28px 32px;
         text-align: center;
-        max-width: 380px;
+        max-width: 360px;
         width: 90%;
         box-shadow: 0 8px 32px rgba(231,76,60,0.3);
       ">
         <div style="font-size: 40px; margin-bottom: 12px;">😢</div>
-        <div style="color: #e74c3c; font-size: 20px; font-weight: bold; margin-bottom: 16px;">
+        <div style="color: #e74c3c; font-size: 20px; font-weight: bold; margin-bottom: 12px;">
           You can't afford this!
-        </div>
-        <div style="
-          background: #16213e; border-radius: 8px; padding: 14px; margin-bottom: 16px; text-align: left;
-        ">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-            <span style="color:#95a5a6; font-size:12px;">House price</span>
-            <span style="color:#f39c12; font-size:14px; font-weight:bold;">$${d.price.toLocaleString()}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-            <span style="color:#95a5a6; font-size:12px;">Your balance</span>
-            <span style="color:#2ecc71; font-size:14px; font-weight:bold;">$${d.balance.toLocaleString()}</span>
-          </div>
-          <div style="background:#0a0a2a; border-radius:6px; height:10px; overflow:hidden; margin-bottom:8px;">
-            <div style="width:${progressPct}%; height:100%; background:${affordColor}; border-radius:6px;"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:${affordColor}; font-size:11px; font-weight:bold;">Still a long way to go</span>
-            <span style="color:#7f8c8d; font-size:11px;">${progressPct}% of price</span>
-          </div>
         </div>
         <div style="color: #e74c3c; font-size: 16px; font-weight: bold; margin-bottom: 18px;">
           You need $${shortage.toLocaleString()} more
