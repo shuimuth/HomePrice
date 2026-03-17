@@ -1570,7 +1570,7 @@ class MapScene extends Phaser.Scene {
 
     this.hudBg = this.add.graphics().setScrollFactor(0).setDepth(DEPTH.HUD);
     this.hudBg.fillStyle(0x000000, 0.5);
-    this.hudBg.fillRoundedRect(8, 8, hudW, 68, 8);
+    this.hudBg.fillRoundedRect(8, 8, hudW, 50, 8);
 
     this.hudTitle = this.add.text(16, 14, '🗺️ Explore Valrenta City', {
       fontSize: '13px',
@@ -1597,10 +1597,6 @@ class MapScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
 
-    this.hudBalance = this.add.text(20, 55, `Balance: $${GameState.balance.toLocaleString()}`, {
-      fontSize: '11px',
-      color: '#2ecc71',
-    }).setScrollFactor(0).setDepth(DEPTH.HUD + 1);
 
     this.controlsHint = this.add.text(16, cam.height - 22, 'WASD / Arrows: Move    E: Enter house    Visit all 8 houses to continue', {
       fontSize: '11px',
