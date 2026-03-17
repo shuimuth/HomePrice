@@ -1963,6 +1963,7 @@ class MapScene extends Phaser.Scene {
     const yearsToSave = (areaData.price / salary / 12).toFixed(1);
 
     return {
+      id: def.id,
       name: areaData.name,
       price: areaData.price,
       icon: def.icon,

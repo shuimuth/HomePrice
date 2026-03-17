@@ -136,7 +136,8 @@ class HouseInteriorScene extends Phaser.Scene {
           <!-- Interior Description -->
           <div style="background: #16213e; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
             <div style="color: #3498db; font-size: 13px; font-weight: bold; margin-bottom: 8px;">🏠 Interior</div>
-            <p style="color: #bdc3c7; font-size: 13px; line-height: 1.7; margin: 0 0 10px;">${d.interiorDesc}</p>
+            <img src="assets/house/${d.id}.png" alt="${d.name} interior"
+              style="width:100%; border-radius:6px; margin-bottom:10px; object-fit:cover; max-height:200px; display:block;" />
             <div style="display: flex; flex-wrap: wrap; gap: 2px;">
               ${featuresHTML}
             </div>
