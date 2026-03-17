@@ -1962,6 +1962,18 @@ class MapScene extends Phaser.Scene {
     const interior = interiorMap[def.tier] || interiorMap.mid;
     const yearsToSave = (areaData.price / salary / 12).toFixed(1);
 
+    const ratingMap = {
+      downtown:   { comfort: 5, decor: 5 },
+      midtown:    { comfort: 3, decor: 3 },
+      eastside:   { comfort: 3, decor: 4 },
+      westpark:   { comfort: 4, decor: 4 },
+      northgate:  { comfort: 2, decor: 2 },
+      southview:  { comfort: 2, decor: 1 },
+      lakefront:  { comfort: 5, decor: 5 },
+      oldquarter: { comfort: 1, decor: 3 },
+    };
+    const rating = ratingMap[def.id] || { comfort: 3, decor: 3 };
+
     return {
       id: def.id,
       name: areaData.name,
@@ -1973,6 +1985,8 @@ class MapScene extends Phaser.Scene {
       color: def.color,
       roofColor: def.roofColor,
       floors: def.floors,
+      comfort: rating.comfort,
+      decor: rating.decor,
       interiorDesc: interior.desc,
       features: interior.features,
       yearsToSave,
