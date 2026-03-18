@@ -100,6 +100,22 @@ class MapScene extends Phaser.Scene {
       this.cameras.main.setZoom(1);
       this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
       this.updateHUD();
+
+      for (const house of this.houses) {
+        if (this.visitedHouses.has(house.def.id) && house.priceText && !house.priceText.visible) {
+          house.priceText.setVisible(true);
+          const targetY = house.priceText.y;
+          house.priceText.y = targetY + 6;
+          this.tweens.add({
+            targets: house.priceText,
+            alpha: 1,
+            y: targetY,
+            duration: 400,
+            ease: 'Back.easeOut',
+          });
+        }
+      }
+
       if (this.allVisited() && !this._toastShown) {
         this._toastShown = true;
         this.showAllVisitedToast();
@@ -1288,11 +1304,16 @@ class MapScene extends Phaser.Scene {
         fontStyle: 'bold',
       }).setOrigin(0.5).setDepth(DEPTH.LABELS + 1);
 
-      this.add.text(def.x, cardY + 8, `$${areaData.price.toLocaleString()}`, {
+      const priceText = this.add.text(def.x, cardY + 8, `$${areaData.price.toLocaleString()}`, {
         fontSize: '10px',
         fontFamily: 'Segoe UI, sans-serif',
         color: '#FFD54F',
       }).setOrigin(0.5).setDepth(DEPTH.LABELS + 1);
+
+      if (!this._freeExplore) {
+        priceText.setVisible(false);
+        priceText.setAlpha(0);
+      }
 
       // Trigger zone — covers entire building + margin
       const triggerZone = this.add.zone(def.x, def.y, def.w + 60, def.h + 60);
@@ -1362,7 +1383,7 @@ class MapScene extends Phaser.Scene {
       highlightG.fillRoundedRect(bx - 8, by - 8, def.w + 16, def.h + 16, 6);
 
       houses.push({
-        def, areaData, triggerZone, visitMark,
+        def, areaData, triggerZone, visitMark, priceText,
         unvisitedMark, unvisitedTween, highlightG,
         buildingG, doorSprite, glowPillar, glowTween,
       });
