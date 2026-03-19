@@ -16,7 +16,7 @@ module.exports = {
   },
 
   // --- Initial Funds ---
-  initialFunds: 1500, // starting money (0 to ~1 month salary)
+  initialFunds: 0, // starting money (0 to ~1 month salary)
 
   // --- House Price Multipliers ---
   lowHousePriceMultiplier: 6,   // LHP: average house price = salary * 6
@@ -37,14 +37,14 @@ module.exports = {
   investmentAmount: 10000, // hypothetical investment amount ($XXX)
 
   // --- Work Task Parameters ---
-  clicksPerTaskUnit: 3,           // mouse clicks required per task unit
-  workTimeLimitSeconds: 5,        // time limit per work session (seconds)
-  bonusThreshold: 10,              // task units above this earn bonus
-  penaltyThreshold: 10,             // task units below this incur penalty
+  clicksPerTaskUnit: 1,           // mouse clicks required per task unit
+  workTimeLimitSeconds: 65,        // time limit per work session (seconds)
+  bonusThreshold: 150,              // task units above this earn bonus
+  penaltyThreshold: 150,             // task units below this incur penalty
   bonusPerUnit: 5,                 // bonus per extra task unit above threshold
   penaltyPerUnit: 5,               // deduction per missing task unit below threshold
-  bonusMaxTotal: 250,              // maximum total bonus cap
-  penaltyMaxTotal: 250,            // maximum total penalty cap
+  bonusMaxTotal: 1000,              // maximum total bonus cap
+  penaltyMaxTotal: 1000,            // maximum total penalty cap
 
   // --- Game Structure ---
   totalGameMonths: 3,              // number of game months
