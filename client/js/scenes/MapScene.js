@@ -1981,13 +1981,13 @@ class MapScene extends Phaser.Scene {
 
     const ratingMap = {
       downtown:   { comfort: 5, decor: 5 },
-      midtown:    { comfort: 3, decor: 3 },
-      eastside:   { comfort: 3, decor: 4 },
-      westpark:   { comfort: 4, decor: 4 },
-      northgate:  { comfort: 2, decor: 2 },
-      southview:  { comfort: 2, decor: 1 },
-      lakefront:  { comfort: 5, decor: 5 },
-      oldquarter: { comfort: 1, decor: 3 },
+      midtown:    { comfort: 4, decor: 4 },
+      eastside:   { comfort: 4, decor: 4.5 },
+      westpark:   { comfort: 4.5, decor: 4.5 },
+      northgate:  { comfort: 4, decor: 4 },
+      southview:  { comfort: 4, decor: 4 },
+      lakefront:  { comfort: 4.5, decor: 5 },
+      oldquarter: { comfort: 4, decor: 4.5 },
     };
     const rating = ratingMap[def.id] || { comfort: 3, decor: 3 };
 

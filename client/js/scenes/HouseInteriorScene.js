@@ -84,7 +84,7 @@ class HouseInteriorScene extends Phaser.Scene {
             <div style="flex:1; max-width: 220px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:#95a5a6; font-size:13px;">🛋️ Comfort</span>
-                <span style="color:#e8d44d; font-size:13px;">${'★'.repeat(d.comfort)}${'☆'.repeat(5 - d.comfort)}</span>
+                <span style="color:#e8d44d; font-size:14px; letter-spacing:1px; line-height:1;">${'★'.repeat(Math.floor(d.comfort))}${d.comfort % 1 ? '<span style="display:inline-block;position:relative;width:1em;vertical-align:baseline;line-height:1;"><span style="position:absolute;left:0;top:0;overflow:hidden;width:50%;color:#e8d44d;">★</span><span style="color:#555;">★</span></span>' : ''}${'<span style="color:#555;">★</span>'.repeat(5 - Math.ceil(d.comfort))}</span>
               </div>
               <div style="background:rgba(255,255,255,0.1); border-radius:4px; height:8px; overflow:hidden;">
                 <div style="width:${d.comfort * 20}%; height:100%; background:linear-gradient(90deg,#e74c3c,#f39c12,#2ecc71); border-radius:4px;"></div>
@@ -93,7 +93,7 @@ class HouseInteriorScene extends Phaser.Scene {
             <div style="flex:1; max-width: 220px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:#95a5a6; font-size:13px;">🎨 Decor</span>
-                <span style="color:#e8d44d; font-size:13px;">${'★'.repeat(d.decor)}${'☆'.repeat(5 - d.decor)}</span>
+                <span style="color:#e8d44d; font-size:14px; letter-spacing:1px; line-height:1;">${'★'.repeat(Math.floor(d.decor))}${d.decor % 1 ? '<span style="display:inline-block;position:relative;width:1em;vertical-align:baseline;line-height:1;"><span style="position:absolute;left:0;top:0;overflow:hidden;width:50%;color:#e8d44d;">★</span><span style="color:#555;">★</span></span>' : ''}${'<span style="color:#555;">★</span>'.repeat(5 - Math.ceil(d.decor))}</span>
               </div>
               <div style="background:rgba(255,255,255,0.1); border-radius:4px; height:8px; overflow:hidden;">
                 <div style="width:${d.decor * 20}%; height:100%; background:linear-gradient(90deg,#e74c3c,#9b59b6,#3498db); border-radius:4px;"></div>
